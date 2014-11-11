@@ -7,7 +7,7 @@ import nwdb
 
 @core.handler
 def add(client, handle, type):
-    client.check_auth()
+    client.require_auth()
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         yield from cursor.execute("""
@@ -23,3 +23,16 @@ def add(client, handle, type):
             yield from client.send("contacts.add", [True, rs[0], handle, type])
 
 
+@core.handler
+def fetch(client, handle, type):
+    client.require_auth()
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        yield from cursor.execute("""
+        select A.id, B.handle, member_id, type, created
+        from contacts A
+        inner join member B on A.member_id = B.id
+        where owner_id = %s
+        """, [client.session["member_id"]])
+        rs = yield from cursor.fetchall()
+        yield from client.send("contacts.fetch", [dict(i) for i in rs])

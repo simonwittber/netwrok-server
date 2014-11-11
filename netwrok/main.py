@@ -14,6 +14,7 @@ import websockets
 
 import server
 import config
+import nwdb
 
 
 
@@ -30,6 +31,8 @@ def reloader():
             nmt = os.stat(f)[stat.ST_MTIME]
             if mt != nmt:
                 print("Change detected, restarting...")
+                nwdb.close()
+                yield from nwdb.pool.wait_closed()
                 os.execl(__file__, "")
 
 

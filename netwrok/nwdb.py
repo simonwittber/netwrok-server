@@ -12,3 +12,6 @@ def connection():
     conn = yield from pool
     return conn
 
+def close():
+    if pool is not None: pool.terminate()
+

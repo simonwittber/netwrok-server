@@ -14,6 +14,7 @@ import mailqueue
 import auth
 import contacts
 import inbox
+import objects
 
 
 debug = True
