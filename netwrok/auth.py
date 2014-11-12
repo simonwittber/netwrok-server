@@ -27,13 +27,13 @@ def authenticate(client, email, password):
         else:
             h = (hash + rs[2]).encode("utf8")
             if hashlib.sha256(h).hexdigest() == password:
-                client.session["member_id"] = rs[0]
+                client.member_id = client.session["member_id"] = rs[0]
                 authenticated = True
             else:
                 authenticated = False
         if(not authenticated):
             yield from asyncio.sleep(3)
-        client.authenticated = True
+        client.authenticated = authenticated
         yield from client.send("auth.authenticate", authenticated)
 
 
