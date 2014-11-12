@@ -41,6 +41,9 @@ def mailer():
                 yield from cursor.execute("""
                 update mailqueue set sent = %s, error = %s where id = %s
                 """, [sent, error, rs[0]])
+                yield from cursor.execute("""
+                delete from mailqueue where sent = true and now() - created > interval '1 days'
+                """)
                 cursor.execute("commit")
                 yield from asyncio.sleep(0.1)
 
