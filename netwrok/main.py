@@ -19,7 +19,7 @@ import nwdb
 
 
 @asyncio.coroutine
-def reloader():
+def reloader(mp):
     files = dict()
     for i in sys.modules.values():
         if hasattr(i, "__file__"):
@@ -31,8 +31,10 @@ def reloader():
             nmt = os.stat(f)[stat.ST_MTIME]
             if mt != nmt:
                 print("Change detected, restarting...")
-                nwdb.close()
-                yield from nwdb.pool.wait_closed()
+                if mp is not None:
+                    mp.terminate() 
+                yield from nwdb.close()
+                yield from server.close()
                 os.execl(__file__, "")
 
 
@@ -43,7 +45,7 @@ def run():
     try:
         start_server = websockets.serve(server.server, '0.0.0.0', 8765)
         if config.RELOAD_ON_CHANGE:
-            asyncio.async(reloader())
+            asyncio.async(reloader(mp))
         asyncio.get_event_loop().run_until_complete(start_server)
         asyncio.get_event_loop().run_forever()
 
