@@ -12,6 +12,18 @@ def connection():
     conn = yield from pool
     return conn
 
+@asyncio.coroutine
 def close():
-    if pool is not None: pool.terminate()
+    if pool is not None: 
+        pool.terminate()
+        yield from pool.wait_closed()
+
+@asyncio.coroutine
+def execute(sql, *args):
+    with (yield from connection()) as conn:
+        cursor = yield from conn.cursor()
+        yield from cursor.execute(sql, args)
+        rs = yield from cursor.fetchall()
+        return rs
+        
 
