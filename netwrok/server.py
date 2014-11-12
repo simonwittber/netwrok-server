@@ -15,6 +15,7 @@ import auth
 import contacts
 import inbox
 import objects
+import clan
 
 
 debug = True
@@ -85,6 +86,10 @@ class Client:
         for r in list(self.rooms):
             yield from self.leave(r)
 
+@asyncio.coroutine
+def close():
+    for c in list(clients.values()):
+        yield from c.ws.close()
 
 @asyncio.coroutine
 def server(ws, path):
