@@ -42,12 +42,11 @@ class Client:
         if not self.authenticated:
             raise AuthException()
 
-
     @asyncio.coroutine
     def send(self, msg, *args):
-        """Send a msg to the server"""
+        """Send a msg to the client"""
         if self.dead: return
-        payload = json.dumps(dict(name=msg, args=list(args)))
+        payload = json.dumps(dict(name=msg, type="evt", args=list(args)))
         print("> " + payload)
         try:
             yield from self.ws.send(payload)
@@ -111,24 +110,42 @@ def server(ws, path):
         except ValueError:
             break
         print("< " + str(obj))
-        name = obj["name"]
-        args = obj["args"]
+        mType = obj["type"]
         try:
-            if name == "join":
-                yield from client.join(args[0])
-            elif name == "leave":
-                yield from client.leave(args[0])
-            elif name == "say":
-                yield from client.say(args[0], args[1], *args[2:])
-            elif name == "whisper":
-                yield from client.whisper(args[0], args[1], *args[2:])
-            else: 
-                yield from core.handlers[name](client, *args)
+            if mType == "evt":
+                yield from handle_event(client, obj)
+            if mType == "fn":
+                yield from handle_function(client, obj)
         except AuthException:
             yield from client.send("unauthorized")
         except Exception as e:
             print(type(e), str(e))
-            yield from client.send("exception", name, args, str(type(e)), str(e))
+            yield from client.send("exception", obj, str(type(e).__name__), str(e))
+
     yield from client.close()
-    
+
+@asyncio.coroutine
+def handle_function(client, msg):
+    name = msg["name"]
+    args = msg["args"]
+    mID = msg["id"]
+    result = yield from core.function_handlers[name](client, *args)
+    yield from client.send("return", mID, result)
+
+@asyncio.coroutine
+def handle_event(client, msg):
+    name = msg["name"]
+    args = msg["args"]
+    if name == "join":
+        yield from client.join(args[0])
+    elif name == "leave":
+        yield from client.leave(args[0])
+    elif name == "say":
+        yield from client.say(args[0], args[1], *args[2:])
+    elif name == "whisper":
+        yield from client.whisper(args[0], args[1], *args[2:])
+    else: 
+        yield from core.event_handlers[name](client, *args)
+
+
 

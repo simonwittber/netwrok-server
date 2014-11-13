@@ -26,7 +26,7 @@ def set_object(client, key, value):
             select %s, %s, %s
             """, [client.session["member_id"], key, value])
 
-@core.handler
+@core.function
 def get_object(client, key):
     """
     Retrieves an arbitrary object previously stored by the member under a key.
@@ -41,6 +41,6 @@ def get_object(client, key):
         rs = yield from cursor.fetchone()
         if rs is not None:
             rs = json.loads(rs[0])
-        yield from client.send("objects.get", key, rs)
+        return rs
 
 
