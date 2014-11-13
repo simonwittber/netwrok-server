@@ -7,6 +7,9 @@ import nwdb
 
 @asyncio.coroutine
 def send(client, email, subject, body):
+    """
+    Schedule an email to be sent.
+    """
     with (yield from nwdb.connection()) as conn:
         member_id = None
         if "member_id" in client.session:

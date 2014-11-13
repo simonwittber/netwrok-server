@@ -7,6 +7,9 @@ import core
 
 @core.handler
 def set_object(client, key, value):
+    """
+    Save an arbitrary object for a member under a key.
+    """
     client.require_auth()
     value = json.dumps(value)
     with (yield from nwdb.connection()) as conn:
@@ -25,6 +28,9 @@ def set_object(client, key, value):
 
 @core.handler
 def get_object(client, key):
+    """
+    Retrieves an arbitrary object previously stored by the member under a key.
+    """
     client.require_auth()
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()

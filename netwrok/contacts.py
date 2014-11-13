@@ -6,25 +6,30 @@ import nwdb
 
 
 @core.handler
-def add(client, handle, type):
+def add(client, member_id, type):
+    """
+    Add another member to the member's contact list.
+    """
     client.require_auth()
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         yield from cursor.execute("""
         insert into contact(owner_id, member_id, type)
-        select %s, id, %s from
-        member where lower(handle) = lower('%s')
+        select %s, %s, %s
         returning id, handle, type
-        """, [client.session["member_id"], type, handle])
+        """, [client.session["member_id"], member_id, type])
         rs = yield from cursor.fetchone()
         if rs is None:
-            yield from client.send("contacts.add", [False, handle, type])
+            yield from client.send("contacts.add", [False, member_id, type])
         else:
-            yield from client.send("contacts.add", [True, rs[0], handle, type])
+            yield from client.send("contacts.add", [True, rs[0], rs[1], rs[2]])
 
 
 @core.handler
-def fetch(client, handle, type):
+def fetch(client):
+    """
+    Retrieves the contact list for the member.
+    """
     client.require_auth()
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()

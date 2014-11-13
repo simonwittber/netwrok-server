@@ -17,6 +17,10 @@ def get_object(client, key):
 
 @core.handler
 def members(client):
+    """
+    Fetch the members of the clan that the user belongs to.
+    """
+
     client.require_auth()
     rs = yield from nwdb.execute("""
     select A.id, A.name, A.type, B.member_id, C.handle, B.type, B.admin
@@ -32,11 +36,14 @@ def members(client):
         results["id"] = i[0]
         results["type"] = i[2]
         results["members"].append(i[3:])
-    yield from client.send("clan", results)
+    yield from client.send("clan.members", results)
 
 
 @core.handler
 def create(client, clan_name, type):
+    """
+    Create a new clan.
+    """
     client.require_auth()
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
@@ -61,6 +68,9 @@ def create(client, clan_name, type):
             
 @core.handler
 def leave(client):
+    """
+    Leave the current clan.
+    """
     yield from nwdb.execute("""
     delete from clan_member where member_id = %s
     """, [client.member_id])
@@ -69,6 +79,10 @@ def leave(client):
 
 @core.handler
 def join(client, clan_id):
+    """
+    Join a clan. The member must be approved after this event is sent by
+    a clan admin.
+    """
     try:
         yield from nwdb.execute("""
         insert into clan_member(clan_id, member_id, type, admin)
@@ -83,6 +97,9 @@ def join(client, clan_id):
 
 @core.handler
 def setadmin(client, member_id, admin):
+    """
+    Change a clan member's admin status.
+    """
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         try:
@@ -105,6 +122,9 @@ def setadmin(client, member_id, admin):
 
 @core.handler
 def setmembertype(client, member_id, type):
+    """
+    Change the membership type of a clan member. 
+    """
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         try:

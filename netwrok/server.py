@@ -7,6 +7,7 @@ from subprocess import Popen
 
 import websockets
 
+#modules that handle received messages
 import core
 import nwdb
 import config
@@ -18,7 +19,7 @@ import objects
 import clan
 import analytics
 
-debug = True
+
 clients = dict()
 rooms = defaultdict(set)
 
@@ -37,12 +38,14 @@ class Client:
         self.dead = False
 
     def require_auth(self):
+        """Raise exception if client is not authenticated"""
         if not self.authenticated:
             raise AuthException()
 
 
     @asyncio.coroutine
     def send(self, msg, *args):
+        """Send a msg to the server"""
         if self.dead: return
         payload = json.dumps(dict(name=msg, args=list(args)))
         print("> " + payload)
@@ -54,18 +57,21 @@ class Client:
 
     @asyncio.coroutine
     def whisper(self, uid, msg, *args):
+        """Send a msg directly to a connected user"""
         self.require_auth()
         c = clients[uid]
         yield from c.send("whispers", msg, self.uid, *args)
 
     @asyncio.coroutine
     def say(self, room, msg, *args):
+        """Broadcast a msg to everyone in the room"""
         self.require_auth()
         for c in list(rooms[room]):
             yield from c.send("said", msg, self.uid, room, *args)
 
     @asyncio.coroutine
     def join(self, name):
+        """Join a room"""
         self.require_auth()
         self.rooms.add(name)
         rooms[name].add(self)
@@ -74,6 +80,7 @@ class Client:
     
     @asyncio.coroutine
     def leave(self, name):
+        """Leave a room"""
         self.require_auth()
         yield from self.say(name, "bye")
         self.rooms.remove(name)

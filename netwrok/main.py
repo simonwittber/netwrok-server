@@ -20,6 +20,9 @@ import nwdb
 
 @asyncio.coroutine
 def reloader(mp):
+    """
+    Watch files for changes, then restart the process if required.
+    """
     files = dict()
     for i in sys.modules.values():
         if hasattr(i, "__file__"):
@@ -28,7 +31,11 @@ def reloader(mp):
         yield from asyncio.sleep(1)
         for f in files:
             mod, mt = files[f]
-            nmt = os.stat(f)[stat.ST_MTIME]
+            try:
+                nmt = os.stat(f)[stat.ST_MTIME]
+            except:
+                #force a restart if something bad happens.
+                nmt = mt - 1;
             if mt != nmt:
                 print("Change detected, restarting...")
                 if mp is not None:

@@ -6,6 +6,9 @@ import core
 
 @core.handler
 def send(client, member_id, type, text):
+    """
+    Send a message to another member.
+    """
     client.require_auth()
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
@@ -16,6 +19,9 @@ def send(client, member_id, type, text):
 
 @core.handler
 def fetch(client):
+    """
+    Get the list of messages from a member's inbox.
+    """
     client.require_auth()
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()

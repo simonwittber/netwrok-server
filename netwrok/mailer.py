@@ -6,6 +6,9 @@ import config
 
 @asyncio.coroutine
 def mailer():
+    """
+    Periodicaly poll the database mailqueue table and send emails.
+    """
     while True: 
         with (yield from nwdb.connection()) as conn:
             cursor = yield from conn.cursor()

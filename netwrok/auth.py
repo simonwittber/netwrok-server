@@ -12,6 +12,12 @@ import mailqueue
 
 @core.handler
 def authenticate(client, email, password):
+    """
+    Authenticate the client by matching email and password.
+    Note, the password must not be sent in cleartext, it is sent as a
+    sha356(uid + sha256(password)), where uid is sent with the initial
+    welcome message.
+    """
     hash = client.uid
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
@@ -39,6 +45,10 @@ def authenticate(client, email, password):
 
 @core.handler
 def register(client, handle, email, password):
+    """
+    Register a new user. Handle and email must be unique, and password
+    must be sha256(password), not cleartext.
+    """
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         try:
@@ -57,6 +67,10 @@ def register(client, handle, email, password):
  
 @core.handler
 def password_reset_request(client, email):
+    """
+    Request a password reset for an email address. A code is sent to the
+    email address which must be passed in via th password_reset message.
+    """
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         token = hashlib.md5(os.urandom(8)).hexdigest()[:8]
@@ -76,6 +90,10 @@ def password_reset_request(client, email):
 
 @core.handler
 def password_reset(client, email, token, password):
+    """
+    Change the password by using the provided token. The password must be
+    sha256(password), not cleartext.
+    """
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         success = False
