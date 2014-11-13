@@ -5,14 +5,49 @@ import nwdb
 import core
 
 
+
 @core.handler
 def set_object(client, key, value):
-    pass
+    """
+    Save an arbitrary object for a member under a key. Member must 
+    be admin in clan.
+    """
+    client.require_auth()
+    value = json.dumps(value)
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        yield from cursor.execute("""
+        update clan_object A set value = %s
+        where key = %s
+        and exists (select id from clan_member B where admin and member_id = %s and B.clan_id = A.clan_id)
+        returning id
+        """, [value, key, client.session["member_id"]])
+        rs = yield from cursor.fetchone()
+        if rs is None:
+            yield from cursor.execute("""
+            insert into object(clan_id, member_id, key, value)
+            select clan_id, %s, %s, %s
+            from clan_member where admin and member_id = %s
+            """, [client.session["member_id"], key, value])
 
 
 @core.handler
 def get_object(client, key):
-    pass
+    """
+    Retrieves an arbitrary object previously stored by the member under a key.
+    """
+    client.require_auth()
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        yield from cursor.execute("""
+        select value from clan_object A
+        inner join clan_member B on A.clan_id = B.clan_id
+        where B.member_id = %s and A.key = %s
+        """, [client.session["member_id"], key])
+        rs = yield from cursor.fetchone()
+        if rs is not None:
+            rs = json.loads(rs[0])
+        yield from client.send("clan_objects.get", key, rs)
 
 
 @core.handler
