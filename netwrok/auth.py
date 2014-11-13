@@ -22,7 +22,7 @@ def authenticate(client, email, password):
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         yield from cursor.execute("""
-        select A.id, A.email, A.password
+        select A.id, A.handle, A.email, A.password
         from member A
         where lower(A.email) = lower(%s)
         """, [email])
@@ -31,7 +31,7 @@ def authenticate(client, email, password):
         if rs is None:
             authenticated = False
         else:
-            h = (hash + rs[2]).encode("utf8")
+            h = (hash + rs[3]).encode("utf8")
             if hashlib.sha256(h).hexdigest() == password:
                 client.member_id = client.session["member_id"] = rs[0]
                 authenticated = True
@@ -41,6 +41,7 @@ def authenticate(client, email, password):
             yield from asyncio.sleep(3)
         client.authenticated = authenticated
         yield from client.send("auth.authenticate", authenticated)
+        yield from client.send("auth.info", rs[0], rs[1])
 
 
 @core.handler
