@@ -6,7 +6,7 @@ import nwdb
 import core
 
 @core.handler
-def set(client, key, value):
+def set_object(client, key, value):
     client.require_auth()
     value = json.dumps(value)
     with (yield from nwdb.connection()) as conn:
@@ -24,7 +24,7 @@ def set(client, key, value):
             """, [client.session["member_id"], key, value])
 
 @core.handler
-def get(client, key):
+def get_object(client, key):
     client.require_auth()
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
