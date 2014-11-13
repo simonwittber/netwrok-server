@@ -55,7 +55,6 @@ def members(client):
     """
     Fetch the members of the clan that the user belongs to.
     """
-
     client.require_auth()
     rs = yield from nwdb.execute("""
     select A.id, A.name, A.type, B.member_id, C.handle, B.type, B.admin
@@ -178,3 +177,16 @@ def setmembertype(client, member_id, type):
             yield from cursor.execute("rollback")
             yield from client.send("clan.setmembertype", member_id, type, False)
             raise
+
+
+@core.handler
+def list(client):
+    """
+    Fetch list of clans
+    """
+    client.require_auth()
+    rs = yield from nwdb.execute("""
+    select id, name, type from clan
+    order by name
+    """)
+    yield from client.send("clan.list", [i for i in rs])
