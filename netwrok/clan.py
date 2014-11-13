@@ -4,8 +4,19 @@ import aiopg
 import nwdb
 import core
 
+
 @core.handler
-def get(client):
+def set_object(client, key, value):
+    pass
+
+
+@core.handler
+def get_object(client, key):
+    pass
+
+
+@core.handler
+def members(client):
     client.require_auth()
     rs = yield from nwdb.execute("""
     select A.id, A.name, A.type, B.member_id, C.handle, B.type, B.admin
