@@ -16,7 +16,7 @@ import contacts
 import inbox
 import objects
 import clan
-
+import analytics
 
 debug = True
 clients = dict()
