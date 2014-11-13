@@ -15,14 +15,14 @@ def set_object(client, key, value):
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         yield from cursor.execute("""
-        update objects set value = %s
+        update object set value = %s
         where key = %s and member_id = %s
         returning id
         """, [value, key, client.session["member_id"]])
         rs = yield from cursor.fetchone()
         if rs is None:
             yield from cursor.execute("""
-            insert into objects(member_id, key, value)
+            insert into object(member_id, key, value)
             select %s, %s, %s
             """, [client.session["member_id"], key, value])
 
@@ -35,7 +35,7 @@ def get_object(client, key):
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         yield from cursor.execute("""
-        select value from objects
+        select value from object
         where member_id = %s and key = %s
         """, [client.session["member_id"], key])
         rs = yield from cursor.fetchone()

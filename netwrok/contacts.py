@@ -35,7 +35,7 @@ def fetch(client):
         cursor = yield from conn.cursor()
         yield from cursor.execute("""
         select A.id, B.handle, member_id, type, created
-        from contacts A
+        from contact A
         inner join member B on A.member_id = B.id
         where owner_id = %s
         """, [client.session["member_id"]])
