@@ -1,3 +1,4 @@
+import random
 import asyncio
 import hashlib
 import os
@@ -43,15 +44,27 @@ class Client:
             raise AuthException()
 
     @asyncio.coroutine
+    def process_return(self, msgId, obj):
+        print(msgId)
+        print(obj)
+        self.requests[msgId] = obj
+
+    @asyncio.coroutine
     def send(self, msg, *args):
+        yield from self._send("ev", self.rndId(), msg, args)
+
+    def rndId(self):
+        return "%08X"%random.randint(-2147483648, 2147483647)
+    
+    @asyncio.coroutine
+    def _send(self, mType, msgId, msg, args):
         """Send a msg to the client"""
         if self.dead: return
-        payload = json.dumps(dict(name=msg, type="evt", args=list(args)))
+        payload = json.dumps(dict(name=msg, type=mType, id=msgId, args=list(args)))
         print("> " + payload)
         try:
             yield from self.ws.send(payload)
         except websockets.exceptions.InvalidState:
-            print("InvalidState", self.uid)
             yield from self.close()
 
     @asyncio.coroutine
@@ -112,7 +125,7 @@ def server(ws, path):
         print("< " + str(obj))
         mType = obj["type"]
         try:
-            if mType == "evt":
+            if mType == "ev":
                 yield from handle_event(client, obj)
             if mType == "fn":
                 yield from handle_function(client, obj)
