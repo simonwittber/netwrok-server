@@ -24,6 +24,23 @@ COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 SET search_path = public, pg_catalog;
 
+--
+-- Name: update_wallet_balance(); Type: FUNCTION; Schema: public; Owner: simon
+--
+
+CREATE FUNCTION update_wallet_balance() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$BEGIN
+update wallet set balance = balance + NEW.income - NEW.expense
+where id = NEW.dst_wallet_id;
+update wallet set balance = balance - NEW.income + NEW.expense
+where id = NEW.src_wallet_id;
+return NEW;
+END;$$;
+
+
+ALTER FUNCTION public.update_wallet_balance() OWNER TO simon;
+
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -62,6 +79,42 @@ ALTER TABLE public.analytics_id_seq OWNER TO simon;
 --
 
 ALTER SEQUENCE analytics_id_seq OWNED BY analytics.id;
+
+
+--
+-- Name: badge; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+--
+
+CREATE TABLE badge (
+    id integer NOT NULL,
+    member_id integer,
+    name text,
+    description text,
+    created timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.badge OWNER TO simon;
+
+--
+-- Name: badge_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+--
+
+CREATE SEQUENCE badge_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.badge_id_seq OWNER TO simon;
+
+--
+-- Name: badge_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+--
+
+ALTER SEQUENCE badge_id_seq OWNED BY badge.id;
 
 
 --
@@ -210,6 +263,39 @@ ALTER SEQUENCE contacts_id_seq OWNED BY contact.id;
 
 
 --
+-- Name: currency; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+--
+
+CREATE TABLE currency (
+    id integer NOT NULL,
+    name text NOT NULL
+);
+
+
+ALTER TABLE public.currency OWNER TO simon;
+
+--
+-- Name: currency_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+--
+
+CREATE SEQUENCE currency_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.currency_id_seq OWNER TO simon;
+
+--
+-- Name: currency_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+--
+
+ALTER SEQUENCE currency_id_seq OWNED BY currency.id;
+
+
+--
 -- Name: inbox; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
 --
 
@@ -245,6 +331,44 @@ ALTER TABLE public.inbox_id_seq OWNER TO simon;
 --
 
 ALTER SEQUENCE inbox_id_seq OWNED BY inbox.id;
+
+
+--
+-- Name: journal; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+--
+
+CREATE TABLE journal (
+    id integer NOT NULL,
+    src_wallet_id integer NOT NULL,
+    dst_wallet_id integer,
+    income double precision NOT NULL,
+    tx_id integer NOT NULL,
+    created timestamp without time zone DEFAULT now(),
+    expense double precision NOT NULL
+);
+
+
+ALTER TABLE public.journal OWNER TO simon;
+
+--
+-- Name: journal_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+--
+
+CREATE SEQUENCE journal_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.journal_id_seq OWNER TO simon;
+
+--
+-- Name: journal_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+--
+
+ALTER SEQUENCE journal_id_seq OWNED BY journal.id;
 
 
 --
@@ -394,10 +518,53 @@ ALTER SEQUENCE password_reset_request_id_seq OWNED BY password_reset_request.id;
 
 
 --
+-- Name: wallet; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+--
+
+CREATE TABLE wallet (
+    id integer NOT NULL,
+    member_id integer,
+    currency_id integer NOT NULL,
+    balance double precision DEFAULT 0 NOT NULL,
+    name text
+);
+
+
+ALTER TABLE public.wallet OWNER TO simon;
+
+--
+-- Name: wallet_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+--
+
+CREATE SEQUENCE wallet_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.wallet_id_seq OWNER TO simon;
+
+--
+-- Name: wallet_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+--
+
+ALTER SEQUENCE wallet_id_seq OWNED BY wallet.id;
+
+
+--
 -- Name: id; Type: DEFAULT; Schema: public; Owner: simon
 --
 
 ALTER TABLE ONLY analytics ALTER COLUMN id SET DEFAULT nextval('analytics_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+--
+
+ALTER TABLE ONLY badge ALTER COLUMN id SET DEFAULT nextval('badge_id_seq'::regclass);
 
 
 --
@@ -432,7 +599,21 @@ ALTER TABLE ONLY contact ALTER COLUMN id SET DEFAULT nextval('contacts_id_seq'::
 -- Name: id; Type: DEFAULT; Schema: public; Owner: simon
 --
 
+ALTER TABLE ONLY currency ALTER COLUMN id SET DEFAULT nextval('currency_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+--
+
 ALTER TABLE ONLY inbox ALTER COLUMN id SET DEFAULT nextval('inbox_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+--
+
+ALTER TABLE ONLY journal ALTER COLUMN id SET DEFAULT nextval('journal_id_seq'::regclass);
 
 
 --
@@ -464,165 +645,10 @@ ALTER TABLE ONLY password_reset_request ALTER COLUMN id SET DEFAULT nextval('pas
 
 
 --
--- Data for Name: analytics; Type: TABLE DATA; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: simon
 --
 
-COPY analytics (id, member_id, path, event, created) FROM stdin;
-\.
-
-
---
--- Name: analytics_id_seq; Type: SEQUENCE SET; Schema: public; Owner: simon
---
-
-SELECT pg_catalog.setval('analytics_id_seq', 1, false);
-
-
---
--- Data for Name: clan; Type: TABLE DATA; Schema: public; Owner: simon
---
-
-COPY clan (id, name, type, created) FROM stdin;
-1	Devs	Dev	2014-11-12 14:16:20.58286
-2	Hoomans	A	2014-11-12 22:13:56.569888
-\.
-
-
---
--- Name: clan_id_seq; Type: SEQUENCE SET; Schema: public; Owner: simon
---
-
-SELECT pg_catalog.setval('clan_id_seq', 4, true);
-
-
---
--- Data for Name: clan_member; Type: TABLE DATA; Schema: public; Owner: simon
---
-
-COPY clan_member (id, clan_id, member_id, type, created, admin) FROM stdin;
-1	1	49	Founder	2014-11-12 14:17:49.719147	t
-5	1	53	Member	2014-11-12 22:38:34.783727	t
-\.
-
-
---
--- Name: clan_member_id_seq; Type: SEQUENCE SET; Schema: public; Owner: simon
---
-
-SELECT pg_catalog.setval('clan_member_id_seq', 5, true);
-
-
---
--- Data for Name: clan_object; Type: TABLE DATA; Schema: public; Owner: simon
---
-
-COPY clan_object (id, clan_id, member_id, key, value, created) FROM stdin;
-\.
-
-
---
--- Name: clan_object_id_seq; Type: SEQUENCE SET; Schema: public; Owner: simon
---
-
-SELECT pg_catalog.setval('clan_object_id_seq', 1, false);
-
-
---
--- Data for Name: contact; Type: TABLE DATA; Schema: public; Owner: simon
---
-
-COPY contact (id, owner_id, member_id, type, created) FROM stdin;
-\.
-
-
---
--- Name: contacts_id_seq; Type: SEQUENCE SET; Schema: public; Owner: simon
---
-
-SELECT pg_catalog.setval('contacts_id_seq', 1, false);
-
-
---
--- Data for Name: inbox; Type: TABLE DATA; Schema: public; Owner: simon
---
-
-COPY inbox (id, member_id, from_member_id, type, body, read, created) FROM stdin;
-\.
-
-
---
--- Name: inbox_id_seq; Type: SEQUENCE SET; Schema: public; Owner: simon
---
-
-SELECT pg_catalog.setval('inbox_id_seq', 1, false);
-
-
---
--- Data for Name: mailqueue; Type: TABLE DATA; Schema: public; Owner: simon
---
-
-COPY mailqueue (id, member_id, address, subject, body, sent, created, error) FROM stdin;
-51	53	boris@wittber.com	Welcome.	Thanks for registering.	t	2014-11-12 22:33:35.066194	f
-\.
-
-
---
--- Name: mailqueue_id_seq; Type: SEQUENCE SET; Schema: public; Owner: simon
---
-
-SELECT pg_catalog.setval('mailqueue_id_seq', 51, true);
-
-
---
--- Data for Name: member; Type: TABLE DATA; Schema: public; Owner: simon
---
-
-COPY member (id, email, password, created, handle) FROM stdin;
-49	simon@wittber.com	aa6535359b2872a70e182018a829e0da7a99e0def6ce7d1f0225f0ad1829a9cf	2014-11-10 15:32:09.443081	DoctorConrad
-53	boris@wittber.com	0df89317e02535902d116be0f27294a75145339bf4af53fb35131aea8071a0e1	2014-11-12 22:33:34.987099	boris
-\.
-
-
---
--- Name: member_id_seq; Type: SEQUENCE SET; Schema: public; Owner: simon
---
-
-SELECT pg_catalog.setval('member_id_seq', 62, true);
-
-
---
--- Data for Name: object; Type: TABLE DATA; Schema: public; Owner: simon
---
-
-COPY object (id, member_id, key, value, created) FROM stdin;
-1	49	name	"Simon Wittber"	2014-11-11 23:41:07.316583
-\.
-
-
---
--- Name: objects_id_seq; Type: SEQUENCE SET; Schema: public; Owner: simon
---
-
-SELECT pg_catalog.setval('objects_id_seq', 1, true);
-
-
---
--- Data for Name: password_reset_request; Type: TABLE DATA; Schema: public; Owner: simon
---
-
-COPY password_reset_request (id, member_id, token, expires) FROM stdin;
-36	49	1ae31905	2014-11-11 15:32:09.477824
-37	49	868bbba9	2014-11-12 22:01:47.278911
-38	49	6c1089a0	2014-11-12 22:08:13.731147
-39	49	74a8fe8d	2014-11-12 22:08:34.348673
-\.
-
-
---
--- Name: password_reset_request_id_seq; Type: SEQUENCE SET; Schema: public; Owner: simon
---
-
-SELECT pg_catalog.setval('password_reset_request_id_seq', 39, true);
+ALTER TABLE ONLY wallet ALTER COLUMN id SET DEFAULT nextval('wallet_id_seq'::regclass);
 
 
 --
@@ -631,6 +657,14 @@ SELECT pg_catalog.setval('password_reset_request_id_seq', 39, true);
 
 ALTER TABLE ONLY analytics
     ADD CONSTRAINT analytics_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: badge_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+--
+
+ALTER TABLE ONLY badge
+    ADD CONSTRAINT badge_pkey PRIMARY KEY (id);
 
 
 --
@@ -666,11 +700,35 @@ ALTER TABLE ONLY contact
 
 
 --
+-- Name: currency_name_key; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+--
+
+ALTER TABLE ONLY currency
+    ADD CONSTRAINT currency_name_key UNIQUE (name);
+
+
+--
+-- Name: currency_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+--
+
+ALTER TABLE ONLY currency
+    ADD CONSTRAINT currency_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: inbox_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
 --
 
 ALTER TABLE ONLY inbox
     ADD CONSTRAINT inbox_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: journal_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+--
+
+ALTER TABLE ONLY journal
+    ADD CONSTRAINT journal_pkey PRIMARY KEY (id);
 
 
 --
@@ -706,6 +764,14 @@ ALTER TABLE ONLY password_reset_request
 
 
 --
+-- Name: wallet_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+--
+
+ALTER TABLE ONLY wallet
+    ADD CONSTRAINT wallet_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: clan_lower_idx; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
 --
 
@@ -734,11 +800,26 @@ CREATE UNIQUE INDEX member_handle_key ON member USING btree (lower((handle)::tex
 
 
 --
+-- Name: update_wallet_balance; Type: TRIGGER; Schema: public; Owner: simon
+--
+
+CREATE TRIGGER update_wallet_balance AFTER INSERT ON journal FOR EACH ROW EXECUTE PROCEDURE update_wallet_balance();
+
+
+--
 -- Name: analytics_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
 --
 
 ALTER TABLE ONLY analytics
     ADD CONSTRAINT analytics_member_id_fkey FOREIGN KEY (member_id) REFERENCES member(id);
+
+
+--
+-- Name: badge_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+--
+
+ALTER TABLE ONLY badge
+    ADD CONSTRAINT badge_member_id_fkey FOREIGN KEY (member_id) REFERENCES member(id);
 
 
 --
@@ -806,6 +887,22 @@ ALTER TABLE ONLY inbox
 
 
 --
+-- Name: journal_from_wallet_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+--
+
+ALTER TABLE ONLY journal
+    ADD CONSTRAINT journal_from_wallet_id_fkey FOREIGN KEY (src_wallet_id) REFERENCES wallet(id);
+
+
+--
+-- Name: journal_to_wallet_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+--
+
+ALTER TABLE ONLY journal
+    ADD CONSTRAINT journal_to_wallet_id_fkey FOREIGN KEY (dst_wallet_id) REFERENCES wallet(id);
+
+
+--
 -- Name: mailqueue_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
 --
 
@@ -827,6 +924,22 @@ ALTER TABLE ONLY object
 
 ALTER TABLE ONLY password_reset_request
     ADD CONSTRAINT password_reset_request_member_id_fkey FOREIGN KEY (member_id) REFERENCES member(id);
+
+
+--
+-- Name: wallet_currency_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+--
+
+ALTER TABLE ONLY wallet
+    ADD CONSTRAINT wallet_currency_id_fkey FOREIGN KEY (currency_id) REFERENCES currency(id);
+
+
+--
+-- Name: wallet_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+--
+
+ALTER TABLE ONLY wallet
+    ADD CONSTRAINT wallet_member_id_fkey FOREIGN KEY (member_id) REFERENCES member(id);
 
 
 --
