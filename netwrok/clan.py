@@ -105,6 +105,7 @@ def leave(client):
     """
     Leave the current clan.
     """
+    client.require_auth()
     yield from nwdb.execute("""
     delete from clan_member where member_id = %s
     """, [client.member_id])
@@ -117,6 +118,7 @@ def join(client, clan_id):
     Join a clan. The member must be approved after this event is sent by
     a clan admin.
     """
+    client.require_auth()
     try:
         yield from nwdb.execute("""
         insert into clan_member(clan_id, member_id, type, admin)
@@ -133,6 +135,7 @@ def setadmin(client, member_id, admin):
     """
     Change a clan member's admin status.
     """
+    client.require_auth()
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         try:
@@ -157,6 +160,7 @@ def setmembertype(client, member_id, type):
     """
     Change the membership type of a clan member. 
     """
+    client.require_auth()
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         try:
