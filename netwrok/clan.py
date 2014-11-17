@@ -31,7 +31,7 @@ def set_object(client, key, value):
             """, [client.session["member_id"], key, value])
 
 
-@core.handler
+@core.function
 def get_object(client, key):
     """
     Retrieves an arbitrary object previously stored by the member under a key.
@@ -47,10 +47,10 @@ def get_object(client, key):
         rs = yield from cursor.fetchone()
         if rs is not None:
             rs = json.loads(rs[0])
-        yield from client.send("clan_objects.get", key, rs)
+        return rs
 
 
-@core.handler
+@core.function
 def members(client):
     """
     Fetch the members of the clan that the user belongs to.
@@ -70,10 +70,10 @@ def members(client):
         results["id"] = i[0]
         results["type"] = i[2]
         results["members"].append(i[3:])
-    yield from client.send("clan.members", results)
+    return results
 
 
-@core.handler
+@core.function
 def create(client, clan_name, type):
     """
     Create a new clan.
@@ -94,13 +94,13 @@ def create(client, clan_name, type):
             select %s, %s, 'Founder', true
             """,[rs[0], client.member_id])
             yield from cursor.execute("commit")
-            yield from client.send("clan.create", True, rs[0])
+            return True
         except:
             yield from cursor.execute("rollback")
-            yield from client.send("clan.create", False, rs[0])
-            raise
+            return False
             
-@core.handler
+
+@core.function
 def leave(client):
     """
     Leave the current clan.
@@ -108,10 +108,10 @@ def leave(client):
     yield from nwdb.execute("""
     delete from clan_member where member_id = %s
     """, [client.member_id])
-    yield from client.send("clan.leave", True)
+    return True
 
 
-@core.handler
+@core.function
 def join(client, clan_id):
     """
     Join a clan. The member must be approved after this event is sent by
@@ -123,13 +123,12 @@ def join(client, clan_id):
         select %s, %s, 'Pending', false
         returning id
         """, clan_id, client.member_id)
-        yield from client.send("clan.join", True)
+        return True
     except:
-        yield from client.send("clan.join", False)
-        raise
+        return False
 
 
-@core.handler
+@core.function
 def setadmin(client, member_id, admin):
     """
     Change a clan member's admin status.
@@ -147,14 +146,13 @@ def setadmin(client, member_id, admin):
             rs = yield from cursor.fetchone()
             yield from cursor.execute("commit")
             success = rs is not None
-            yield from client.send("clan.setadmin", success)
+            return success
         except:
             yield from cursor.execute("rollback")
-            yield from client.send("clan.setadmin", False)
-            raise
+            return False
 
 
-@core.handler
+@core.function
 def setmembertype(client, member_id, type):
     """
     Change the membership type of a clan member. 
@@ -172,14 +170,13 @@ def setmembertype(client, member_id, type):
             rs = yield from cursor.fetchone()
             yield from cursor.execute("commit")
             success = rs is not None
-            yield from client.send("clan.setmembertype", member_id, type, success)
+            return success
         except:
             yield from cursor.execute("rollback")
-            yield from client.send("clan.setmembertype", member_id, type, False)
-            raise
+            return False
 
 
-@core.handler
+@core.function
 def list(client):
     """
     Fetch list of clans
@@ -189,4 +186,4 @@ def list(client):
     select id, name, type from clan
     order by name
     """)
-    yield from client.send("clan.list", [i for i in rs])
+    return [i for i in rs]

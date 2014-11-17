@@ -89,7 +89,7 @@ def password_reset_request(client, email):
             yield from client.send("auth.password_reset_request", True)
  
 
-@core.handler
+@core.function
 def password_reset(client, email, token, password):
     """
     Change the password by using the provided token. The password must be
@@ -119,7 +119,7 @@ def password_reset(client, email, token, password):
                 yield from cursor.execute("delete from password_reset_request where member_id = %s", [member_id])
                 yield from mailqueue.send(client, email, "Password Reset", "Success")
 
-        yield from client.send("auth.password_reset", success)
+        return success
  
 
 

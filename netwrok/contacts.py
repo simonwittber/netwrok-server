@@ -25,7 +25,7 @@ def add(client, member_id, type):
             yield from client.send("contacts.add", [True, rs[0], rs[1], rs[2]])
 
 
-@core.handler
+@core.function
 def fetch(client):
     """
     Retrieves the contact list for the member.
@@ -40,4 +40,4 @@ def fetch(client):
         where owner_id = %s
         """, [client.session["member_id"]])
         rs = yield from cursor.fetchall()
-        yield from client.send("contacts.fetch", [dict(i) for i in rs])
+        return [dict(i) for i in rs]

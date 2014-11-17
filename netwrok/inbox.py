@@ -17,7 +17,7 @@ def send(client, member_id, type, text):
         select %s, %s, %s, %s
         """, [member_id, client.session["member_id"], type, text])
 
-@core.handler
+@core.function
 def fetch(client):
     """
     Get the list of messages from a member's inbox.
@@ -31,6 +31,6 @@ def fetch(client):
         limit 32
         """, [client.session["member_id"]])
         rs = yield from cursor.fetchall()
-        yield from client.send("inbox.fetch", [dict(i) for i in rs])
+        return [dict(i) for i in rs]
 
 
