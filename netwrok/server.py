@@ -19,6 +19,7 @@ import inbox
 import objects
 import clan
 import analytics
+import wallet
 
 
 clients = dict()
