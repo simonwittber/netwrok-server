@@ -38,10 +38,17 @@ class Client:
         self.uid = hashlib.md5(os.urandom(8)).hexdigest()
         self.authenticated = False
         self.dead = False
+        self.roles = []
 
     def require_auth(self):
         """Raise exception if client is not authenticated"""
         if not self.authenticated:
+            raise AuthException()
+
+    def require_role(self, role):
+        """Raise exception if client is not authenticated"""
+        self.require_auth()
+        if role not in self.roles:
             raise AuthException()
 
     @asyncio.coroutine

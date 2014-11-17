@@ -22,9 +22,12 @@ def authenticate(client, email, password):
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         yield from cursor.execute("""
-        select A.id, A.handle, A.email, A.password
+        select A.id, A.handle, A.email, A.password, string_agg(D.name, ',') as roles
         from member A
+        inner join member_role C on A.id = C.member_id
+        inner join role D on D.id = C.role_id
         where lower(A.email) = lower(%s)
+        group by 1,2,3,4
         """, [email])
         rs = yield from cursor.fetchone()
         authenticated = False
@@ -34,7 +37,11 @@ def authenticate(client, email, password):
             h = (hash + rs[3]).encode("utf8")
             if hashlib.sha256(h).hexdigest() == password:
                 client.member_id = client.session["member_id"] = rs[0]
+                client.roles = rs[4].split(",")
                 authenticated = True
+                if 'Banned' in client.roles:
+                    yield from client.send("auth.banned")
+                    authenticated = False
             else:
                 authenticated = False
         if(not authenticated):
@@ -66,6 +73,7 @@ def register(client, handle, email, password):
             yield from mailqueue.send(client, email, "Welcome.", "Thanks for registering.")
             yield from client.send("auth.register", True)
  
+
 @core.handler
 def password_reset_request(client, email):
     """
@@ -121,6 +129,38 @@ def password_reset(client, email, token, password):
 
         return success
  
+
+@core.handler
+def ban(client, member_id):
+    client.require_role('Operator')
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        success = False
+        yield from cursor.execute("""
+        insert into member_role(member_id, role_id)
+        select %s, id
+        from role where name = 'Banned'
+        """, member_id)
+
+
+@core.handler
+def unban(client, member_id):
+    client.require_role('Operator')
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        success = False
+        yield from cursor.execute("""
+        delete from member_role
+        where member_id = %s and role_id = (select id from role where name = 'Banned')
+        """, member_id)
+
+
+
+
+
+
+
+
 
 
 
