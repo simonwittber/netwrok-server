@@ -124,6 +124,8 @@ def server(ws, path):
         except ValueError:
             break
         print("< " + str(obj))
+        if not("type" in obj and "name" in obj and "args" in obj):
+            break
         mType = obj["type"]
         try:
             if mType == "ev":
