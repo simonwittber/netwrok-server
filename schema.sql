@@ -3,6 +3,7 @@
 --
 
 SET statement_timeout = 0;
+SET lock_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SET check_function_bodies = false;
@@ -25,19 +26,36 @@ COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 SET search_path = public, pg_catalog;
 
 --
--- Name: add_new_member_to_player_role(); Type: FUNCTION; Schema: public; Owner: simon
+-- Name: add_role(integer, text); Type: FUNCTION; Schema: public; Owner: simon
 --
 
-CREATE FUNCTION add_new_member_to_player_role() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$BEGIN
-insert into member_role(member_id, role_id) select NEW.id, A.id
-from role A where A.name = 'Player';
-return NEW;
-END;$$;
+CREATE FUNCTION add_role(integer, text) RETURNS text[]
+    LANGUAGE sql
+    AS $_$
+
+update member set roles = roles || text($2) where id = $1
+returning roles;
+
+$_$;
 
 
-ALTER FUNCTION public.add_new_member_to_player_role() OWNER TO simon;
+ALTER FUNCTION public.add_role(integer, text) OWNER TO simon;
+
+--
+-- Name: remove_role(integer, text); Type: FUNCTION; Schema: public; Owner: simon
+--
+
+CREATE FUNCTION remove_role(integer, text) RETURNS text[]
+    LANGUAGE sql
+    AS $_$
+
+update member set roles = array_remove(roles, text($2)) where id = $1
+returning roles;
+
+$_$;
+
+
+ALTER FUNCTION public.remove_role(integer, text) OWNER TO simon;
 
 --
 -- Name: update_wallet_balance(); Type: FUNCTION; Schema: public; Owner: simon
@@ -59,6 +77,41 @@ ALTER FUNCTION public.update_wallet_balance() OWNER TO simon;
 SET default_tablespace = '';
 
 SET default_with_oids = false;
+
+--
+-- Name: alliance; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+--
+
+CREATE TABLE alliance (
+    id integer NOT NULL,
+    name text NOT NULL,
+    type text,
+    created timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.alliance OWNER TO simon;
+
+--
+-- Name: alliance_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+--
+
+CREATE SEQUENCE alliance_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.alliance_id_seq OWNER TO simon;
+
+--
+-- Name: alliance_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+--
+
+ALTER SEQUENCE alliance_id_seq OWNED BY alliance.id;
+
 
 --
 -- Name: analytics; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
@@ -109,10 +162,10 @@ ALTER SEQUENCE analytics_id_seq OWNED BY analytics.id;
 
 CREATE TABLE badge (
     id integer NOT NULL,
-    member_id integer,
-    name text,
+    member_id integer NOT NULL,
+    name text NOT NULL,
     description text,
-    created timestamp without time zone DEFAULT now()
+    created timestamp without time zone DEFAULT now() NOT NULL
 );
 
 
@@ -147,7 +200,8 @@ CREATE TABLE clan (
     id integer NOT NULL,
     name character varying(256) NOT NULL,
     type character varying(32),
-    created timestamp without time zone DEFAULT now()
+    created timestamp without time zone DEFAULT now() NOT NULL,
+    alliance_id integer
 );
 
 
@@ -175,80 +229,6 @@ ALTER SEQUENCE clan_id_seq OWNED BY clan.id;
 
 
 --
--- Name: clan_member; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
---
-
-CREATE TABLE clan_member (
-    id integer NOT NULL,
-    clan_id integer,
-    member_id integer,
-    type character varying(32),
-    created timestamp without time zone DEFAULT now(),
-    admin boolean DEFAULT false
-);
-
-
-ALTER TABLE public.clan_member OWNER TO simon;
-
---
--- Name: clan_member_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
---
-
-CREATE SEQUENCE clan_member_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.clan_member_id_seq OWNER TO simon;
-
---
--- Name: clan_member_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
---
-
-ALTER SEQUENCE clan_member_id_seq OWNED BY clan_member.id;
-
-
---
--- Name: clan_object; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
---
-
-CREATE TABLE clan_object (
-    id integer NOT NULL,
-    clan_id integer NOT NULL,
-    member_id integer NOT NULL,
-    key text,
-    value text,
-    created timestamp without time zone DEFAULT now()
-);
-
-
-ALTER TABLE public.clan_object OWNER TO simon;
-
---
--- Name: clan_object_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
---
-
-CREATE SEQUENCE clan_object_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.clan_object_id_seq OWNER TO simon;
-
---
--- Name: clan_object_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
---
-
-ALTER SEQUENCE clan_object_id_seq OWNED BY clan_object.id;
-
-
---
 -- Name: contact; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
 --
 
@@ -257,7 +237,7 @@ CREATE TABLE contact (
     owner_id integer NOT NULL,
     member_id integer NOT NULL,
     type character varying(16),
-    created timestamp without time zone DEFAULT now()
+    created timestamp without time zone DEFAULT now() NOT NULL
 );
 
 
@@ -318,73 +298,6 @@ ALTER SEQUENCE currency_id_seq OWNED BY currency.id;
 
 
 --
--- Name: entity_instance; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
---
-
-CREATE TABLE entity_instance (
-    id integer NOT NULL,
-    entity_id integer NOT NULL,
-    object text
-);
-
-
-ALTER TABLE public.entity_instance OWNER TO simon;
-
---
--- Name: entity_instance_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
---
-
-CREATE SEQUENCE entity_instance_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.entity_instance_id_seq OWNER TO simon;
-
---
--- Name: entity_instance_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
---
-
-ALTER SEQUENCE entity_instance_id_seq OWNED BY entity_instance.id;
-
-
---
--- Name: entity_template; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
---
-
-CREATE TABLE entity_template (
-    id integer NOT NULL,
-    name text NOT NULL
-);
-
-
-ALTER TABLE public.entity_template OWNER TO simon;
-
---
--- Name: entity_template_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
---
-
-CREATE SEQUENCE entity_template_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.entity_template_id_seq OWNER TO simon;
-
---
--- Name: entity_template_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
---
-
-ALTER SEQUENCE entity_template_id_seq OWNED BY entity_template.id;
-
-
---
 -- Name: inbox; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
 --
 
@@ -393,9 +306,9 @@ CREATE TABLE inbox (
     member_id integer NOT NULL,
     from_member_id integer,
     type character varying(32),
-    body text,
-    read boolean DEFAULT false,
-    created timestamp without time zone DEFAULT now()
+    body text NOT NULL,
+    read boolean DEFAULT false NOT NULL,
+    created timestamp without time zone DEFAULT now() NOT NULL
 );
 
 
@@ -467,12 +380,12 @@ ALTER SEQUENCE journal_id_seq OWNED BY journal.id;
 CREATE TABLE mailqueue (
     id integer NOT NULL,
     member_id integer,
-    address character varying(256),
+    address character varying(256) NOT NULL,
     subject character varying(256),
     body text,
-    sent boolean DEFAULT false,
-    created timestamp without time zone DEFAULT now(),
-    error boolean DEFAULT false
+    sent boolean DEFAULT false NOT NULL,
+    created timestamp without time zone DEFAULT now() NOT NULL,
+    error boolean DEFAULT false NOT NULL
 );
 
 
@@ -507,8 +420,10 @@ CREATE TABLE member (
     id integer NOT NULL,
     email character varying(255) NOT NULL,
     password character varying(256) NOT NULL,
-    created timestamp without time zone DEFAULT now(),
-    handle character varying(255) NOT NULL
+    created timestamp without time zone DEFAULT now() NOT NULL,
+    handle character varying(255) NOT NULL,
+    clan_id integer,
+    roles text[] DEFAULT '{}'::text[] NOT NULL
 );
 
 
@@ -536,18 +451,6 @@ ALTER SEQUENCE member_id_seq OWNED BY member.id;
 
 
 --
--- Name: member_role; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
---
-
-CREATE TABLE member_role (
-    member_id integer NOT NULL,
-    role_id integer NOT NULL
-);
-
-
-ALTER TABLE public.member_role OWNER TO simon;
-
---
 -- Name: object; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
 --
 
@@ -556,7 +459,9 @@ CREATE TABLE object (
     member_id integer NOT NULL,
     key character varying(255) NOT NULL,
     value text,
-    created timestamp without time zone DEFAULT now()
+    created timestamp without time zone DEFAULT now(),
+    clan_id integer,
+    alliance_id integer
 );
 
 
@@ -590,8 +495,8 @@ ALTER SEQUENCE object_id_seq OWNED BY object.id;
 CREATE TABLE password_reset_request (
     id integer NOT NULL,
     member_id integer NOT NULL,
-    token character varying(8),
-    expires timestamp without time zone DEFAULT (now() + '24:00:00'::interval)
+    token character varying(8) NOT NULL,
+    expires timestamp without time zone DEFAULT (now() + '24:00:00'::interval) NOT NULL
 );
 
 
@@ -616,39 +521,6 @@ ALTER TABLE public.password_reset_request_id_seq OWNER TO simon;
 --
 
 ALTER SEQUENCE password_reset_request_id_seq OWNED BY password_reset_request.id;
-
-
---
--- Name: role; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
---
-
-CREATE TABLE role (
-    id integer NOT NULL,
-    name text NOT NULL
-);
-
-
-ALTER TABLE public.role OWNER TO simon;
-
---
--- Name: role_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
---
-
-CREATE SEQUENCE role_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
-ALTER TABLE public.role_id_seq OWNER TO simon;
-
---
--- Name: role_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
---
-
-ALTER SEQUENCE role_id_seq OWNED BY role.id;
 
 
 --
@@ -691,6 +563,13 @@ ALTER SEQUENCE wallet_id_seq OWNED BY wallet.id;
 -- Name: id; Type: DEFAULT; Schema: public; Owner: simon
 --
 
+ALTER TABLE ONLY alliance ALTER COLUMN id SET DEFAULT nextval('alliance_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+--
+
 ALTER TABLE ONLY analytics ALTER COLUMN id SET DEFAULT nextval('analytics_id_seq'::regclass);
 
 
@@ -712,20 +591,6 @@ ALTER TABLE ONLY clan ALTER COLUMN id SET DEFAULT nextval('clan_id_seq'::regclas
 -- Name: id; Type: DEFAULT; Schema: public; Owner: simon
 --
 
-ALTER TABLE ONLY clan_member ALTER COLUMN id SET DEFAULT nextval('clan_member_id_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
---
-
-ALTER TABLE ONLY clan_object ALTER COLUMN id SET DEFAULT nextval('clan_object_id_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
---
-
 ALTER TABLE ONLY contact ALTER COLUMN id SET DEFAULT nextval('contacts_id_seq'::regclass);
 
 
@@ -734,20 +599,6 @@ ALTER TABLE ONLY contact ALTER COLUMN id SET DEFAULT nextval('contacts_id_seq'::
 --
 
 ALTER TABLE ONLY currency ALTER COLUMN id SET DEFAULT nextval('currency_id_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
---
-
-ALTER TABLE ONLY entity_instance ALTER COLUMN id SET DEFAULT nextval('entity_instance_id_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
---
-
-ALTER TABLE ONLY entity_template ALTER COLUMN id SET DEFAULT nextval('entity_template_id_seq'::regclass);
 
 
 --
@@ -796,14 +647,15 @@ ALTER TABLE ONLY password_reset_request ALTER COLUMN id SET DEFAULT nextval('pas
 -- Name: id; Type: DEFAULT; Schema: public; Owner: simon
 --
 
-ALTER TABLE ONLY role ALTER COLUMN id SET DEFAULT nextval('role_id_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
---
-
 ALTER TABLE ONLY wallet ALTER COLUMN id SET DEFAULT nextval('wallet_id_seq'::regclass);
+
+
+--
+-- Name: alliance_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+--
+
+ALTER TABLE ONLY alliance
+    ADD CONSTRAINT alliance_pkey PRIMARY KEY (id);
 
 
 --
@@ -820,22 +672,6 @@ ALTER TABLE ONLY analytics
 
 ALTER TABLE ONLY badge
     ADD CONSTRAINT badge_pkey PRIMARY KEY (id);
-
-
---
--- Name: clan_member_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
---
-
-ALTER TABLE ONLY clan_member
-    ADD CONSTRAINT clan_member_pkey PRIMARY KEY (id);
-
-
---
--- Name: clan_object_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
---
-
-ALTER TABLE ONLY clan_object
-    ADD CONSTRAINT clan_object_pkey PRIMARY KEY (id);
 
 
 --
@@ -871,30 +707,6 @@ ALTER TABLE ONLY currency
 
 
 --
--- Name: entity_instance_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
---
-
-ALTER TABLE ONLY entity_instance
-    ADD CONSTRAINT entity_instance_pkey PRIMARY KEY (id);
-
-
---
--- Name: entity_template_name_key; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
---
-
-ALTER TABLE ONLY entity_template
-    ADD CONSTRAINT entity_template_name_key UNIQUE (name);
-
-
---
--- Name: entity_template_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
---
-
-ALTER TABLE ONLY entity_template
-    ADD CONSTRAINT entity_template_pkey PRIMARY KEY (id);
-
-
---
 -- Name: inbox_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
 --
 
@@ -927,14 +739,6 @@ ALTER TABLE ONLY member
 
 
 --
--- Name: member_role_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
---
-
-ALTER TABLE ONLY member_role
-    ADD CONSTRAINT member_role_pkey PRIMARY KEY (member_id, role_id);
-
-
---
 -- Name: objects_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
 --
 
@@ -951,27 +755,25 @@ ALTER TABLE ONLY password_reset_request
 
 
 --
--- Name: role_name_key; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
---
-
-ALTER TABLE ONLY role
-    ADD CONSTRAINT role_name_key UNIQUE (name);
-
-
---
--- Name: role_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
---
-
-ALTER TABLE ONLY role
-    ADD CONSTRAINT role_pkey PRIMARY KEY (id);
-
-
---
 -- Name: wallet_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
 --
 
 ALTER TABLE ONLY wallet
     ADD CONSTRAINT wallet_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: alliance_id_key; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+--
+
+CREATE UNIQUE INDEX alliance_id_key ON alliance USING btree (id);
+
+
+--
+-- Name: alliance_lower_idx; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+--
+
+CREATE UNIQUE INDEX alliance_lower_idx ON alliance USING btree (lower(name));
 
 
 --
@@ -986,13 +788,6 @@ CREATE UNIQUE INDEX clan_id_key ON clan USING btree (id);
 --
 
 CREATE UNIQUE INDEX clan_lower_idx ON clan USING btree (lower((name)::text));
-
-
---
--- Name: clan_member_member_id_idx; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
---
-
-CREATE UNIQUE INDEX clan_member_member_id_idx ON clan_member USING btree (member_id);
 
 
 --
@@ -1024,24 +819,10 @@ CREATE UNIQUE INDEX member_id_key ON member USING btree (id);
 
 
 --
--- Name: role_id_key; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
---
-
-CREATE UNIQUE INDEX role_id_key ON role USING btree (id);
-
-
---
 -- Name: wallet_id_key; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
 --
 
 CREATE UNIQUE INDEX wallet_id_key ON wallet USING btree (id);
-
-
---
--- Name: add_new_member_to_player_role; Type: TRIGGER; Schema: public; Owner: simon
---
-
-CREATE TRIGGER add_new_member_to_player_role AFTER INSERT ON member FOR EACH ROW EXECUTE PROCEDURE add_new_member_to_player_role();
 
 
 --
@@ -1060,35 +841,11 @@ ALTER TABLE ONLY badge
 
 
 --
--- Name: clan_member_clan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: clan_alliance_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
 --
 
-ALTER TABLE ONLY clan_member
-    ADD CONSTRAINT clan_member_clan_id_fkey FOREIGN KEY (clan_id) REFERENCES clan(id) ON DELETE CASCADE;
-
-
---
--- Name: clan_member_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
---
-
-ALTER TABLE ONLY clan_member
-    ADD CONSTRAINT clan_member_member_id_fkey FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE;
-
-
---
--- Name: clan_object_clan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
---
-
-ALTER TABLE ONLY clan_object
-    ADD CONSTRAINT clan_object_clan_id_fkey FOREIGN KEY (clan_id) REFERENCES clan(id) ON DELETE CASCADE;
-
-
---
--- Name: clan_object_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
---
-
-ALTER TABLE ONLY clan_object
-    ADD CONSTRAINT clan_object_member_id_fkey FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE SET NULL;
+ALTER TABLE ONLY clan
+    ADD CONSTRAINT clan_alliance_id_fkey FOREIGN KEY (alliance_id) REFERENCES alliance(id) ON DELETE SET NULL;
 
 
 --
@@ -1105,14 +862,6 @@ ALTER TABLE ONLY contact
 
 ALTER TABLE ONLY contact
     ADD CONSTRAINT contacts_owner_id_fkey FOREIGN KEY (owner_id) REFERENCES member(id);
-
-
---
--- Name: entity_instance_entity_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
---
-
-ALTER TABLE ONLY entity_instance
-    ADD CONSTRAINT entity_instance_entity_id_fkey FOREIGN KEY (entity_id) REFERENCES entity_template(id);
 
 
 --
@@ -1156,27 +905,35 @@ ALTER TABLE ONLY mailqueue
 
 
 --
--- Name: member_role_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: member_clan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
 --
 
-ALTER TABLE ONLY member_role
-    ADD CONSTRAINT member_role_member_id_fkey FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE;
-
-
---
--- Name: member_role_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
---
-
-ALTER TABLE ONLY member_role
-    ADD CONSTRAINT member_role_role_id_fkey FOREIGN KEY (role_id) REFERENCES role(id) ON DELETE CASCADE;
+ALTER TABLE ONLY member
+    ADD CONSTRAINT member_clan_id_fkey FOREIGN KEY (clan_id) REFERENCES clan(id) ON DELETE SET NULL;
 
 
 --
--- Name: objects_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: object_alliance_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
 --
 
 ALTER TABLE ONLY object
-    ADD CONSTRAINT objects_member_id_fkey FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE;
+    ADD CONSTRAINT object_alliance_id_fkey FOREIGN KEY (alliance_id) REFERENCES alliance(id) ON DELETE CASCADE;
+
+
+--
+-- Name: object_clan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+--
+
+ALTER TABLE ONLY object
+    ADD CONSTRAINT object_clan_id_fkey FOREIGN KEY (clan_id) REFERENCES clan(id) ON DELETE CASCADE;
+
+
+--
+-- Name: object_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+--
+
+ALTER TABLE ONLY object
+    ADD CONSTRAINT object_member_id_fkey FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE;
 
 
 --
