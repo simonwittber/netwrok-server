@@ -7,12 +7,17 @@ It uses the asyncio module to provide a single threaded, asynchronous
 network server in the style of node.js. Clients connect via websocket
 and data is persisted in Postgresql, via the aiopg module.
 
+The project goal is to create a no fuss, robust, highly efficient game
+server which can be deployed to a VPS or other server with minimal
+configuration. The API must be simple and understandable, yet flexible
+adaptable, and easily extended by the backend game programmer.
+
 Features
 ========
 
 Members
 -------
-- Digest Authentication - no plaintext passwords ever, anywhere
+- Digest Authentication - no plaintext passwords ever, anywhere.
 - Register / Login / Reset Password / Ban / Unban
 - Member Objects
 - Contacts / Messaging
@@ -28,6 +33,6 @@ Clans
 
 Analytics
 ---------
-- Per user arbitrary event registration, ready for your SQL reports
+- Per user arbitrary event registration, ready for your SQL reports.
 
 
