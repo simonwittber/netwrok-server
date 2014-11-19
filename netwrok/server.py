@@ -58,7 +58,7 @@ def handle_function(c, msg):
     args = msg["args"]
     mID = msg["id"]
     result = yield from core.function_handlers[name](c, *args)
-    yield from c.send("return", mID, result)
+    yield from c.send("return", name, mID, result)
 
 @asyncio.coroutine
 def handle_event(c, msg):
