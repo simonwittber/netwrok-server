@@ -31,13 +31,14 @@ def authenticate(client, email, password):
         """, [email])
         rs = yield from cursor.fetchone()
         authenticated = False
+        roles = []
         if rs is None:
             authenticated = False
         else:
             h = (hash + rs[3]).encode("utf8")
             if hashlib.sha256(h).hexdigest() == password:
                 client.member_id = client.session["member_id"] = rs[0]
-                client.roles = rs[4].split(",")
+                client.roles = roles[:] = rs[4].split(",")
                 authenticated = True
                 if 'Banned' in client.roles:
                     yield from client.send("auth.banned")
@@ -48,7 +49,8 @@ def authenticate(client, email, password):
             yield from asyncio.sleep(3)
         client.authenticated = authenticated
         yield from client.send("auth.authenticate", authenticated)
-        yield from client.send("auth.info", rs[0], rs[1])
+        if authenticated:
+            yield from client.send("auth.info", dict(id=rs[0], handle=rs[1], roles=roles))
 
 
 @core.handler
@@ -153,18 +155,6 @@ def unban(client, member_id):
         delete from member_role
         where member_id = %s and role_id = (select id from role where name = 'Banned')
         """, member_id)
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
