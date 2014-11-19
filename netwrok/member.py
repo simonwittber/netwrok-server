@@ -10,7 +10,7 @@ import core
 import mailqueue
 
 
-@core.handler
+@core.function
 def authenticate(client, email, password):
     """
     Authenticate the client by matching email and password.
@@ -46,12 +46,12 @@ def authenticate(client, email, password):
         if(not authenticated):
             yield from asyncio.sleep(3)
         client.authenticated = authenticated
-        yield from client.send("auth.authenticate", authenticated)
         if authenticated:
             yield from client.send("auth.info", dict(id=rs[0], handle=rs[1], roles=roles, clan_id=rs[4], clan_name=rs[6]))
+        return authenticated
 
 
-@core.handler
+@core.function
 def register(client, handle, email, password):
     """
     Register a new user. Handle and email must be unique, and password
@@ -66,13 +66,12 @@ def register(client, handle, email, password):
             returning id
             """, [handle, email, password])
         except Exception as e:
-            print(e)
-            yield from client.send("auth.register", False)
+            return False
         else:
             rs = yield from cursor.fetchone()
             client.session["member_id"] = rs[0]
             yield from mailqueue.send(client, email, "Welcome.", "Thanks for registering.")
-            yield from client.send("auth.register", True)
+            return True
  
 
 @core.handler
