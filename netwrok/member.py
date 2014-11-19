@@ -22,7 +22,7 @@ def authenticate(client, email, password):
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         yield from cursor.execute("""
-        select A.id, A.handle, A.email, A.password, A.clan_id, A.roles, B.name
+        select A.id, A.handle, A.email, A.password, A.clan_id, A.roles, B.alliance_id
         from member A
         left outer join clan B on B.id = A.clan_id
         where lower(A.email) = lower(%s)
@@ -37,6 +37,8 @@ def authenticate(client, email, password):
             if hashlib.sha256(h).hexdigest() == password:
                 client.member_id = client.session["member_id"] = rs[0]
                 client.roles = list(rs[5])
+                client.clan_id = rs[4]
+                client.alliance_id = rs[6]
                 authenticated = True
                 if 'Banned' in client.roles:
                     yield from client.send("auth.banned")
