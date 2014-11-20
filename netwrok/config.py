@@ -1,5 +1,5 @@
 #Start the mailer process when server starts
-START_MAILER = True
+START_MAILER = False
 #seconds to wait before checking for new messages in queue.
 MAILER_IDLE_TIME = 30
 #from address used when system sends email.
@@ -8,3 +8,5 @@ FROM_ADDRESS = "noreply@differentmethods.com"
 DSN = 'dbname=netwrok_template user=simon host=localhost port=5432'
 #reload the process if any dependent files are modified
 RELOAD_ON_CHANGE=True
+#print sent and recieved messages to the console
+LOG_MESSAGES = True

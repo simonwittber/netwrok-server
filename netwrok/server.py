@@ -1,5 +1,7 @@
 import asyncio
 import json
+import traceback
+import sys
 from collections import defaultdict
 
 import websockets
@@ -13,10 +15,10 @@ import mailqueue
 import member
 import contacts
 import inbox
-import objects
 import clan
 import analytics
 import wallet
+import squad
 
 
 @asyncio.coroutine
@@ -31,11 +33,12 @@ def server(ws, path):
     while not c.dead:
         msg = yield from ws.recv()
         if msg is None: break
+        if config.LOG_MESSAGES:
+            print("< " + str(msg))
         try:
             obj = json.loads(msg)
         except ValueError:
             break
-        print("< " + str(obj))
         if not("type" in obj and "name" in obj and "args" in obj):
             break
         mType = obj["type"]
@@ -47,33 +50,33 @@ def server(ws, path):
         except client.AuthException:
             yield from c.send("unauthorized")
         except Exception as e:
-            print(type(e), str(e))
+            traceback.print_exc(file=sys.stdout)
             yield from c.send("exception", obj, str(type(e).__name__), str(e))
 
     yield from c.close()
+
 
 @asyncio.coroutine
 def handle_function(c, msg):
     name = msg["name"]
     args = msg["args"]
     mID = msg["id"]
-    result = yield from core.function_handlers[name](c, *args)
-    yield from c.send("return", name, mID, result)
+    try:
+        result = yield from core.function_handlers[name](c, *args)
+    except Exception as e:
+        traceback.print_exc(file=sys.stdout)
+        yield from c.send("return", name, mID, False, str(type(e).__name__ + " " + str(e)))
+    else:
+        yield from c.send("return", name, mID, True, result)
+
 
 @asyncio.coroutine
 def handle_event(c, msg):
     name = msg["name"]
     args = msg["args"]
-    if name == "join":
-        yield from c.join(args[0])
-    elif name == "leave":
-        yield from c.leave(args[0])
-    elif name == "say":
-        yield from c.say(args[0], args[1], *args[2:])
-    elif name == "whisper":
+    if name == "whisper":
         yield from c.whisper(args[0], args[1], *args[2:])
     else: 
         yield from core.event_handlers[name](c, *args)
-
 
 

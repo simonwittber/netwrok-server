@@ -5,8 +5,10 @@ import random
 import asyncio
 import json
 
+import room
+import config
+
 clients = dict()
-rooms = defaultdict(set)
 
 
 class AuthException(Exception):
@@ -21,8 +23,25 @@ class Client:
         self.uid = hashlib.md5(os.urandom(8)).hexdigest()
         self.authenticated = False
         self.dead = False
+
+        self.member_id = -1
         self.roles = []
-        clients[self.uid] = self
+        self.clan_id = -1
+        self.alliance_id = -1
+        self.handle = None
+        self.clan_name = None
+        self.alliance_name = None
+        self.member_info = {}
+
+    @asyncio.coroutine
+    def join(self, room):
+        yield from room.add(self)
+        self.rooms.add(room)
+
+    @asyncio.coroutine
+    def leave(self, room):
+        yield from room.remove(self)
+        self.rooms.pop(room)
 
     def require_auth(self):
         """Raise exception if client is not authenticated"""
@@ -35,10 +54,25 @@ class Client:
         if role not in self.roles:
             raise AuthException()
 
+    def require_clan_role(self, clan_id, role):
+        """Raise exception if client is not authenticated"""
+        self.require_auth()
+        role = "Clan " + role
+        if role not in self.roles or clan_id != self.clan_id:
+            raise AuthException()
+
+    def require_alliance_role(self, alliance_id, role):
+        """Raise exception if client is not authenticated"""
+        self.require_auth()
+        role = "Alliance " + role
+        if role not in self.roles or alliance_id != self.alliance_id:
+            raise AuthException()
+
+    def on_authenticated(self):
+        clients[self.member_id] = self
+
     @asyncio.coroutine
     def process_return(self, msgId, obj):
-        print(msgId)
-        print(obj)
         self.requests[msgId] = obj
 
     @asyncio.coroutine
@@ -53,47 +87,25 @@ class Client:
         """Send a msg to the client"""
         if self.dead: return
         payload = json.dumps(dict(name=msg, type=mType, id=msgId, args=list(args)))
-        print("> " + payload)
+        if config.LOG_MESSAGES:
+            print("> " + payload)
         try:
             yield from self.ws.send(payload)
         except websockets.exceptions.InvalidState:
             yield from self.close()
 
     @asyncio.coroutine
-    def whisper(self, uid, msg, *args):
+    def whisper(self, member_id, msg, *args):
         """Send a msg directly to a connected user"""
         self.require_auth()
-        c = clients[uid]
-        yield from c.send("whispers", msg, self.uid, *args)
-
-    @asyncio.coroutine
-    def say(self, room, msg, *args):
-        """Broadcast a msg to everyone in the room"""
-        self.require_auth()
-        for c in list(rooms[room]):
-            yield from c.send("said", msg, self.uid, room, *args)
-
-    @asyncio.coroutine
-    def join(self, name):
-        """Join a room"""
-        self.require_auth()
-        self.rooms.add(name)
-        rooms[name].add(self)
-        yield from self.send("dir", name, list(i.uid for i in rooms[name]))
-        yield from self.say(name, "hello")
-    
-    @asyncio.coroutine
-    def leave(self, name):
-        """Leave a room"""
-        self.require_auth()
-        yield from self.say(name, "bye")
-        self.rooms.remove(name)
-        rooms[name].remove(self)
+        c = clients[member_id]
+        yield from c.send("whispers", msg, self.member_id, *args)
 
     @asyncio.coroutine
     def close(self):
         self.dead = True
-        clients.pop(self.uid)
-        for r in list(self.rooms):
-            yield from self.leave(r)
+        if self.member_id in clients:
+            clients.pop(self.member_id)
+        for r in self.rooms:
+            r.remove(self)
 

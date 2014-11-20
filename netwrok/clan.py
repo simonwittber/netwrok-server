@@ -12,23 +12,21 @@ def set_object(client, key, value):
     Save an arbitrary object for a member under a key. Member must 
     be admin in clan.
     """
-    client.require_auth()
+    client.require_clan_role(client.clan_id, 'Admin')
     value = json.dumps(value)
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         yield from cursor.execute("""
-        update clan_object A set value = %s
-        where key = %s
-        and exists (select id from clan_member B where admin and member_id = %s and B.clan_id = A.clan_id)
+        update clan_store set value = %s
+        where key = %s and clan_id = %s
         returning id
-        """, [value, key, client.session["member_id"]])
+        """, [value, key, client.clan_id])
         rs = yield from cursor.fetchone()
         if rs is None:
             yield from cursor.execute("""
-            insert into object(clan_id, member_id, key, value)
-            select clan_id, %s, %s, %s
-            from clan_member where admin and member_id = %s
-            """, [client.session["member_id"], key, value])
+            insert into clan_store(clan_id, key, value)
+            select %s, %s, %ss
+            """, [client.clan_id, key, value])
 
 
 @core.function
@@ -40,10 +38,9 @@ def get_object(client, key):
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         yield from cursor.execute("""
-        select value from clan_object A
-        inner join clan_member B on A.clan_id = B.clan_id
-        where B.member_id = %s and A.key = %s
-        """, [client.session["member_id"], key])
+        select value from clan_store
+        where clan_id = %s and key = %s 
+        """, [client.clan_id, key])
         rs = yield from cursor.fetchone()
         if rs is not None:
             rs = json.loads(rs[0])
@@ -57,20 +54,11 @@ def members(client):
     """
     client.require_auth()
     rs = yield from nwdb.execute("""
-    select A.id, A.name, A.type, B.member_id, C.handle, B.type, B.admin
-    from clan A
-    inner join clan_member B on A.id = B.clan_id
-    inner join member C on C.id = B.member_id
-    where A.id = (select clan_id from clan_member where member_id = %s)
+    select A.id, A.handle, A.roles
+    from member A
+    where A.clan_id = (select clan_id from member where id = %s)
     """, client.member_id)
-    results = dict()
-    results["members"] = []
-    for i in rs:
-        results["name"] = i[1]
-        results["id"] = i[0]
-        results["type"] = i[2]
-        results["members"].append(i[3:])
-    return results
+    return [dict(i) for i in rs]
 
 
 @core.function
@@ -90,8 +78,8 @@ def create(client, clan_name, type):
             """, [clan_name, type])
             rs = yield from cursor.fetchone()
             yield from cursor.execute("""
-            insert into clan_member(clan_id, member_id, type, admin)
-            select %s, %s, 'Founder', true
+            update member set clan_id = %s, roles = roles || text('Clan Admin')
+            where id = %s
             """,[rs[0], client.member_id])
             yield from cursor.execute("commit")
             return True
@@ -107,7 +95,7 @@ def leave(client):
     """
     client.require_auth()
     yield from nwdb.execute("""
-    delete from clan_member where member_id = %s
+    update member set clan_id = null where member_id = %s
     """, [client.member_id])
     return True
 
@@ -115,69 +103,30 @@ def leave(client):
 @core.function
 def join(client, clan_id):
     """
-    Join a clan. The member must be approved after this event is sent by
+    Join a clan. The member must be approved after this event is sent, by
     a clan admin.
     """
     client.require_auth()
     try:
         yield from nwdb.execute("""
-        insert into clan_member(clan_id, member_id, type, admin)
-        select %s, %s, 'Pending', false
-        returning id
+        update member set clan_id = %s, roles = roles || text('Clan Applicant')
+        where id = %s
         """, clan_id, client.member_id)
         return True
     except:
         return False
 
 
-@core.function
-def setadmin(client, member_id, admin):
-    """
-    Change a clan member's admin status.
-    """
-    client.require_auth()
+@core.handler
+def kick(client, member_id):
+    client.require_clan_role(client.clan_id, 'Admin')
+    yield from remove_role(client.clan_id, member_id, "Clan Admin")
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
-        try:
-            yield from cursor.execute("begin")
-            yield from cursor.execute("""
-            update clan_member A set admin = %s
-            where member_id = %s and type not in ('Pending', 'Banned')
-            and exists (select id from clan_member B where admin and member_id = %s and B.clan_id = A.clan_id)
-            returning id
-            """,[admin, member_id, client.member_id])
-            rs = yield from cursor.fetchone()
-            yield from cursor.execute("commit")
-            success = rs is not None
-            return success
-        except:
-            yield from cursor.execute("rollback")
-            return False
-
-
-@core.function
-def setmembertype(client, member_id, type):
-    """
-    Change the membership type of a clan member. 
-    """
-    client.require_auth()
-    with (yield from nwdb.connection()) as conn:
-        cursor = yield from conn.cursor()
-        try:
-            yield from cursor.execute("begin")
-            yield from cursor.execute("""
-            update clan_member A set type = %s
-            where member_id = %s and type = 'Pending'
-            and exists (select id from clan_member B where admin and member_id = %s and B.clan_id = A.clan_id)
-            returning id
-            """,[type, member_id, client.member_id])
-            rs = yield from cursor.fetchone()
-            yield from cursor.execute("commit")
-            success = rs is not None
-            return success
-        except:
-            yield from cursor.execute("rollback")
-            return False
+        yield from cursor.execute("""
+        update member set clan_id = null
+        where clan_id = %s and id = %s
+        """, [client.clan_id, member_id])
 
 
 @core.function
@@ -190,4 +139,33 @@ def list(client):
     select id, name, type from clan
     order by name
     """)
-    return [i for i in rs]
+    return [dict(i) for i in rs]
+
+
+@core.handler
+def add_role(client, clan_id, member_id, role):
+    client.require_clan_role(clan_id, 'Admin')
+    if not role.startswith("Clan "):
+        raise ValueException("Role must be prefixed with 'Clan '")
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        yield from cursor.execute("""
+        select add_role(%s, %s);
+        """, member_id, role)
+
+
+@core.handler
+def remove_role(client, clan_id, member_id, role):
+    client.require_clan_role(clan_id, 'Admin')
+    if not role.startswith("Clan "):
+        raise ValueException("Role must be prefixed with 'Clan '")
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        yield from cursor.execute("""
+        select remove_role(%s, %s);
+        """, member_id, role)
+
+
+
+
+

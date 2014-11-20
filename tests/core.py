@@ -57,6 +57,10 @@ def client():
     handle = msg["args"][1]
     return id, handle, ws
 
-
-
+@async_test
+def simpletest(ws, sendArgs, recvArgs):
+    yield from send(ws, *sendArgs)
+    result = yield from recv(ws)
+    for k,v in recvArgs.items():
+        assert results[k] == v
 

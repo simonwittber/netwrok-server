@@ -114,6 +114,42 @@ ALTER SEQUENCE alliance_id_seq OWNED BY alliance.id;
 
 
 --
+-- Name: alliance_store; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+--
+
+CREATE TABLE alliance_store (
+    id integer NOT NULL,
+    alliance_id integer NOT NULL,
+    key text NOT NULL,
+    value text,
+    created timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.alliance_store OWNER TO simon;
+
+--
+-- Name: alliance_store_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+--
+
+CREATE SEQUENCE alliance_store_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.alliance_store_id_seq OWNER TO simon;
+
+--
+-- Name: alliance_store_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+--
+
+ALTER SEQUENCE alliance_store_id_seq OWNED BY alliance_store.id;
+
+
+--
 -- Name: analytics; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
 --
 
@@ -226,6 +262,42 @@ ALTER TABLE public.clan_id_seq OWNER TO simon;
 --
 
 ALTER SEQUENCE clan_id_seq OWNED BY clan.id;
+
+
+--
+-- Name: clan_store; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+--
+
+CREATE TABLE clan_store (
+    id integer NOT NULL,
+    clan_id integer NOT NULL,
+    key text NOT NULL,
+    value text,
+    created timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.clan_store OWNER TO simon;
+
+--
+-- Name: clan_store_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+--
+
+CREATE SEQUENCE clan_store_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.clan_store_id_seq OWNER TO simon;
+
+--
+-- Name: clan_store_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+--
+
+ALTER SEQUENCE clan_store_id_seq OWNED BY clan_store.id;
 
 
 --
@@ -451,6 +523,42 @@ ALTER SEQUENCE member_id_seq OWNED BY member.id;
 
 
 --
+-- Name: member_store; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+--
+
+CREATE TABLE member_store (
+    id integer NOT NULL,
+    member_id integer NOT NULL,
+    key text NOT NULL,
+    value text,
+    created timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+ALTER TABLE public.member_store OWNER TO simon;
+
+--
+-- Name: member_store_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+--
+
+CREATE SEQUENCE member_store_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.member_store_id_seq OWNER TO simon;
+
+--
+-- Name: member_store_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+--
+
+ALTER SEQUENCE member_store_id_seq OWNED BY member_store.id;
+
+
+--
 -- Name: object; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
 --
 
@@ -570,6 +678,13 @@ ALTER TABLE ONLY alliance ALTER COLUMN id SET DEFAULT nextval('alliance_id_seq':
 -- Name: id; Type: DEFAULT; Schema: public; Owner: simon
 --
 
+ALTER TABLE ONLY alliance_store ALTER COLUMN id SET DEFAULT nextval('alliance_store_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+--
+
 ALTER TABLE ONLY analytics ALTER COLUMN id SET DEFAULT nextval('analytics_id_seq'::regclass);
 
 
@@ -585,6 +700,13 @@ ALTER TABLE ONLY badge ALTER COLUMN id SET DEFAULT nextval('badge_id_seq'::regcl
 --
 
 ALTER TABLE ONLY clan ALTER COLUMN id SET DEFAULT nextval('clan_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+--
+
+ALTER TABLE ONLY clan_store ALTER COLUMN id SET DEFAULT nextval('clan_store_id_seq'::regclass);
 
 
 --
@@ -633,6 +755,13 @@ ALTER TABLE ONLY member ALTER COLUMN id SET DEFAULT nextval('member_id_seq'::reg
 -- Name: id; Type: DEFAULT; Schema: public; Owner: simon
 --
 
+ALTER TABLE ONLY member_store ALTER COLUMN id SET DEFAULT nextval('member_store_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+--
+
 ALTER TABLE ONLY object ALTER COLUMN id SET DEFAULT nextval('object_id_seq'::regclass);
 
 
@@ -659,6 +788,14 @@ ALTER TABLE ONLY alliance
 
 
 --
+-- Name: alliance_store_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+--
+
+ALTER TABLE ONLY alliance_store
+    ADD CONSTRAINT alliance_store_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: analytics_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
 --
 
@@ -680,6 +817,14 @@ ALTER TABLE ONLY badge
 
 ALTER TABLE ONLY clan
     ADD CONSTRAINT clan_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: clan_store_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+--
+
+ALTER TABLE ONLY clan_store
+    ADD CONSTRAINT clan_store_pkey PRIMARY KEY (id);
 
 
 --
@@ -739,6 +884,14 @@ ALTER TABLE ONLY member
 
 
 --
+-- Name: member_store_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+--
+
+ALTER TABLE ONLY member_store
+    ADD CONSTRAINT member_store_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: objects_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
 --
 
@@ -777,6 +930,13 @@ CREATE UNIQUE INDEX alliance_lower_idx ON alliance USING btree (lower(name));
 
 
 --
+-- Name: alliance_store_alliance_id_key_idx; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+--
+
+CREATE UNIQUE INDEX alliance_store_alliance_id_key_idx ON alliance_store USING btree (alliance_id, key);
+
+
+--
 -- Name: clan_id_key; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
 --
 
@@ -788,6 +948,13 @@ CREATE UNIQUE INDEX clan_id_key ON clan USING btree (id);
 --
 
 CREATE UNIQUE INDEX clan_lower_idx ON clan USING btree (lower((name)::text));
+
+
+--
+-- Name: clan_store_clan_id_key_idx; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+--
+
+CREATE UNIQUE INDEX clan_store_clan_id_key_idx ON clan_store USING btree (clan_id, key);
 
 
 --
@@ -819,6 +986,13 @@ CREATE UNIQUE INDEX member_id_key ON member USING btree (id);
 
 
 --
+-- Name: member_store_member_id_key_idx; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+--
+
+CREATE UNIQUE INDEX member_store_member_id_key_idx ON member_store USING btree (member_id, key);
+
+
+--
 -- Name: wallet_id_key; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
 --
 
@@ -830,6 +1004,14 @@ CREATE UNIQUE INDEX wallet_id_key ON wallet USING btree (id);
 --
 
 CREATE TRIGGER update_wallet_balance AFTER INSERT ON journal FOR EACH ROW EXECUTE PROCEDURE update_wallet_balance();
+
+
+--
+-- Name: alliance_store_alliance_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+--
+
+ALTER TABLE ONLY alliance_store
+    ADD CONSTRAINT alliance_store_alliance_id_fkey FOREIGN KEY (alliance_id) REFERENCES alliance(id);
 
 
 --
@@ -846,6 +1028,14 @@ ALTER TABLE ONLY badge
 
 ALTER TABLE ONLY clan
     ADD CONSTRAINT clan_alliance_id_fkey FOREIGN KEY (alliance_id) REFERENCES alliance(id) ON DELETE SET NULL;
+
+
+--
+-- Name: clan_store_clan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+--
+
+ALTER TABLE ONLY clan_store
+    ADD CONSTRAINT clan_store_clan_id_fkey FOREIGN KEY (clan_id) REFERENCES clan(id);
 
 
 --
@@ -910,6 +1100,14 @@ ALTER TABLE ONLY mailqueue
 
 ALTER TABLE ONLY member
     ADD CONSTRAINT member_clan_id_fkey FOREIGN KEY (clan_id) REFERENCES clan(id) ON DELETE SET NULL;
+
+
+--
+-- Name: member_store_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+--
+
+ALTER TABLE ONLY member_store
+    ADD CONSTRAINT member_store_member_id_fkey FOREIGN KEY (member_id) REFERENCES member(id);
 
 
 --

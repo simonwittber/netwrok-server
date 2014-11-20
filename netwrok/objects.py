@@ -16,7 +16,7 @@ def set_object(client, key, value):
         cursor = yield from conn.cursor()
         yield from cursor.execute("""
         update object set value = %s
-        where key = %s and member_id = %s
+        where key = %s and member_id = %s and clan_id is null and alliance_id is null
         returning id
         """, [value, key, client.session["member_id"]])
         rs = yield from cursor.fetchone()
@@ -25,6 +25,7 @@ def set_object(client, key, value):
             insert into object(member_id, key, value)
             select %s, %s, %s
             """, [client.session["member_id"], key, value])
+
 
 @core.function
 def get_object(client, key):
@@ -36,7 +37,7 @@ def get_object(client, key):
         cursor = yield from conn.cursor()
         yield from cursor.execute("""
         select value from object
-        where member_id = %s and key = %s
+        where member_id = %s and key = %s and clan_id is null and alliance_id is null
         """, [client.session["member_id"], key])
         rs = yield from cursor.fetchone()
         if rs is not None:
