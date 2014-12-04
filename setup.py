@@ -4,6 +4,7 @@ from setuptools import setup, find_packages
 requirements = ['aiopg']
 
 setup(
+    version='0.0.0-dev',
     author = 'Simon Wittber',
     author_email = 'simonwittber@differentmethods.com',
     classifiers = [
@@ -33,6 +34,7 @@ setup(
     entry_points={
         'console_scripts': [
             'netwrok = netwrok.main:run',
+            'create_netwrok = netwrok.cmd:create',
         ]
     }
 )

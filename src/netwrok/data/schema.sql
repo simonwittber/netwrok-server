@@ -10,14 +10,14 @@ SET check_function_bodies = false;
 SET client_min_messages = warning;
 
 --
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: 
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
 --
 
 CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 
 
 --
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: -
 --
 
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
@@ -26,7 +26,7 @@ COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 SET search_path = public, pg_catalog;
 
 --
--- Name: add_role(integer, text); Type: FUNCTION; Schema: public; Owner: simon
+-- Name: add_role(integer, text); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION add_role(integer, text) RETURNS text[]
@@ -39,10 +39,8 @@ returning roles;
 $_$;
 
 
-ALTER FUNCTION public.add_role(integer, text) OWNER TO simon;
-
 --
--- Name: remove_role(integer, text); Type: FUNCTION; Schema: public; Owner: simon
+-- Name: remove_role(integer, text); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION remove_role(integer, text) RETURNS text[]
@@ -55,10 +53,8 @@ returning roles;
 $_$;
 
 
-ALTER FUNCTION public.remove_role(integer, text) OWNER TO simon;
-
 --
--- Name: update_wallet_balance(); Type: FUNCTION; Schema: public; Owner: simon
+-- Name: update_wallet_balance(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION update_wallet_balance() RETURNS trigger
@@ -72,14 +68,12 @@ return NEW;
 END;$$;
 
 
-ALTER FUNCTION public.update_wallet_balance() OWNER TO simon;
-
 SET default_tablespace = '';
 
 SET default_with_oids = false;
 
 --
--- Name: alliance; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: alliance; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE alliance (
@@ -90,10 +84,8 @@ CREATE TABLE alliance (
 );
 
 
-ALTER TABLE public.alliance OWNER TO simon;
-
 --
--- Name: alliance_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: alliance_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE alliance_id_seq
@@ -104,17 +96,15 @@ CREATE SEQUENCE alliance_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.alliance_id_seq OWNER TO simon;
-
 --
--- Name: alliance_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: alliance_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE alliance_id_seq OWNED BY alliance.id;
 
 
 --
--- Name: alliance_store; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: alliance_store; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE alliance_store (
@@ -126,10 +116,8 @@ CREATE TABLE alliance_store (
 );
 
 
-ALTER TABLE public.alliance_store OWNER TO simon;
-
 --
--- Name: alliance_store_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: alliance_store_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE alliance_store_id_seq
@@ -140,17 +128,15 @@ CREATE SEQUENCE alliance_store_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.alliance_store_id_seq OWNER TO simon;
-
 --
--- Name: alliance_store_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: alliance_store_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE alliance_store_id_seq OWNED BY alliance_store.id;
 
 
 --
--- Name: analytics; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: analytics; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE analytics (
@@ -162,17 +148,15 @@ CREATE TABLE analytics (
 );
 
 
-ALTER TABLE public.analytics OWNER TO simon;
-
 --
--- Name: TABLE analytics; Type: COMMENT; Schema: public; Owner: simon
+-- Name: TABLE analytics; Type: COMMENT; Schema: public; Owner: -
 --
 
 COMMENT ON TABLE analytics IS 'No foreign key on this table, as member deletion should not cascade to analytics records.';
 
 
 --
--- Name: analytics_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: analytics_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE analytics_id_seq
@@ -183,17 +167,15 @@ CREATE SEQUENCE analytics_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.analytics_id_seq OWNER TO simon;
-
 --
--- Name: analytics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: analytics_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE analytics_id_seq OWNED BY analytics.id;
 
 
 --
--- Name: badge; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: badge; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE badge (
@@ -205,10 +187,8 @@ CREATE TABLE badge (
 );
 
 
-ALTER TABLE public.badge OWNER TO simon;
-
 --
--- Name: badge_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: badge_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE badge_id_seq
@@ -219,17 +199,15 @@ CREATE SEQUENCE badge_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.badge_id_seq OWNER TO simon;
-
 --
--- Name: badge_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: badge_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE badge_id_seq OWNED BY badge.id;
 
 
 --
--- Name: clan; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: clan; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE clan (
@@ -241,10 +219,8 @@ CREATE TABLE clan (
 );
 
 
-ALTER TABLE public.clan OWNER TO simon;
-
 --
--- Name: clan_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: clan_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE clan_id_seq
@@ -255,17 +231,15 @@ CREATE SEQUENCE clan_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.clan_id_seq OWNER TO simon;
-
 --
--- Name: clan_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: clan_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE clan_id_seq OWNED BY clan.id;
 
 
 --
--- Name: clan_store; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: clan_store; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE clan_store (
@@ -277,10 +251,8 @@ CREATE TABLE clan_store (
 );
 
 
-ALTER TABLE public.clan_store OWNER TO simon;
-
 --
--- Name: clan_store_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: clan_store_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE clan_store_id_seq
@@ -291,17 +263,15 @@ CREATE SEQUENCE clan_store_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.clan_store_id_seq OWNER TO simon;
-
 --
--- Name: clan_store_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: clan_store_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE clan_store_id_seq OWNED BY clan_store.id;
 
 
 --
--- Name: contact; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: contact; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE contact (
@@ -313,10 +283,8 @@ CREATE TABLE contact (
 );
 
 
-ALTER TABLE public.contact OWNER TO simon;
-
 --
--- Name: contacts_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: contacts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE contacts_id_seq
@@ -327,17 +295,15 @@ CREATE SEQUENCE contacts_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.contacts_id_seq OWNER TO simon;
-
 --
--- Name: contacts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: contacts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE contacts_id_seq OWNED BY contact.id;
 
 
 --
--- Name: currency; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: currency; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE currency (
@@ -346,10 +312,8 @@ CREATE TABLE currency (
 );
 
 
-ALTER TABLE public.currency OWNER TO simon;
-
 --
--- Name: currency_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: currency_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE currency_id_seq
@@ -360,17 +324,15 @@ CREATE SEQUENCE currency_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.currency_id_seq OWNER TO simon;
-
 --
--- Name: currency_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: currency_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE currency_id_seq OWNED BY currency.id;
 
 
 --
--- Name: inbox; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: inbox; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE inbox (
@@ -384,10 +346,8 @@ CREATE TABLE inbox (
 );
 
 
-ALTER TABLE public.inbox OWNER TO simon;
-
 --
--- Name: inbox_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: inbox_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE inbox_id_seq
@@ -398,17 +358,15 @@ CREATE SEQUENCE inbox_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.inbox_id_seq OWNER TO simon;
-
 --
--- Name: inbox_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: inbox_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE inbox_id_seq OWNED BY inbox.id;
 
 
 --
--- Name: journal; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: journal; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE journal (
@@ -422,10 +380,8 @@ CREATE TABLE journal (
 );
 
 
-ALTER TABLE public.journal OWNER TO simon;
-
 --
--- Name: journal_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: journal_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE journal_id_seq
@@ -436,17 +392,15 @@ CREATE SEQUENCE journal_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.journal_id_seq OWNER TO simon;
-
 --
--- Name: journal_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: journal_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE journal_id_seq OWNED BY journal.id;
 
 
 --
--- Name: mailqueue; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: mailqueue; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE mailqueue (
@@ -461,10 +415,8 @@ CREATE TABLE mailqueue (
 );
 
 
-ALTER TABLE public.mailqueue OWNER TO simon;
-
 --
--- Name: mailqueue_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: mailqueue_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE mailqueue_id_seq
@@ -475,17 +427,15 @@ CREATE SEQUENCE mailqueue_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.mailqueue_id_seq OWNER TO simon;
-
 --
--- Name: mailqueue_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: mailqueue_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE mailqueue_id_seq OWNED BY mailqueue.id;
 
 
 --
--- Name: member; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: member; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE member (
@@ -499,10 +449,8 @@ CREATE TABLE member (
 );
 
 
-ALTER TABLE public.member OWNER TO simon;
-
 --
--- Name: member_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: member_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE member_id_seq
@@ -513,17 +461,15 @@ CREATE SEQUENCE member_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.member_id_seq OWNER TO simon;
-
 --
--- Name: member_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: member_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE member_id_seq OWNED BY member.id;
 
 
 --
--- Name: member_store; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: member_store; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE member_store (
@@ -535,10 +481,8 @@ CREATE TABLE member_store (
 );
 
 
-ALTER TABLE public.member_store OWNER TO simon;
-
 --
--- Name: member_store_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: member_store_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE member_store_id_seq
@@ -549,17 +493,15 @@ CREATE SEQUENCE member_store_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.member_store_id_seq OWNER TO simon;
-
 --
--- Name: member_store_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: member_store_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE member_store_id_seq OWNED BY member_store.id;
 
 
 --
--- Name: object; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: object; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE object (
@@ -573,10 +515,8 @@ CREATE TABLE object (
 );
 
 
-ALTER TABLE public.object OWNER TO simon;
-
 --
--- Name: object_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: object_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE object_id_seq
@@ -587,17 +527,15 @@ CREATE SEQUENCE object_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.object_id_seq OWNER TO simon;
-
 --
--- Name: object_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: object_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE object_id_seq OWNED BY object.id;
 
 
 --
--- Name: password_reset_request; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: password_reset_request; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE password_reset_request (
@@ -608,10 +546,8 @@ CREATE TABLE password_reset_request (
 );
 
 
-ALTER TABLE public.password_reset_request OWNER TO simon;
-
 --
--- Name: password_reset_request_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: password_reset_request_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE password_reset_request_id_seq
@@ -622,17 +558,15 @@ CREATE SEQUENCE password_reset_request_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.password_reset_request_id_seq OWNER TO simon;
-
 --
--- Name: password_reset_request_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: password_reset_request_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE password_reset_request_id_seq OWNED BY password_reset_request.id;
 
 
 --
--- Name: wallet; Type: TABLE; Schema: public; Owner: simon; Tablespace: 
+-- Name: wallet; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE TABLE wallet (
@@ -644,10 +578,8 @@ CREATE TABLE wallet (
 );
 
 
-ALTER TABLE public.wallet OWNER TO simon;
-
 --
--- Name: wallet_id_seq; Type: SEQUENCE; Schema: public; Owner: simon
+-- Name: wallet_id_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
 CREATE SEQUENCE wallet_id_seq
@@ -658,129 +590,127 @@ CREATE SEQUENCE wallet_id_seq
     CACHE 1;
 
 
-ALTER TABLE public.wallet_id_seq OWNER TO simon;
-
 --
--- Name: wallet_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: simon
+-- Name: wallet_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
 --
 
 ALTER SEQUENCE wallet_id_seq OWNED BY wallet.id;
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY alliance ALTER COLUMN id SET DEFAULT nextval('alliance_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY alliance_store ALTER COLUMN id SET DEFAULT nextval('alliance_store_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY analytics ALTER COLUMN id SET DEFAULT nextval('analytics_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY badge ALTER COLUMN id SET DEFAULT nextval('badge_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY clan ALTER COLUMN id SET DEFAULT nextval('clan_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY clan_store ALTER COLUMN id SET DEFAULT nextval('clan_store_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY contact ALTER COLUMN id SET DEFAULT nextval('contacts_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY currency ALTER COLUMN id SET DEFAULT nextval('currency_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY inbox ALTER COLUMN id SET DEFAULT nextval('inbox_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY journal ALTER COLUMN id SET DEFAULT nextval('journal_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY mailqueue ALTER COLUMN id SET DEFAULT nextval('mailqueue_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY member ALTER COLUMN id SET DEFAULT nextval('member_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY member_store ALTER COLUMN id SET DEFAULT nextval('member_store_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY object ALTER COLUMN id SET DEFAULT nextval('object_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY password_reset_request ALTER COLUMN id SET DEFAULT nextval('password_reset_request_id_seq'::regclass);
 
 
 --
--- Name: id; Type: DEFAULT; Schema: public; Owner: simon
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY wallet ALTER COLUMN id SET DEFAULT nextval('wallet_id_seq'::regclass);
 
 
 --
--- Name: alliance_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: alliance_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY alliance
@@ -788,7 +718,7 @@ ALTER TABLE ONLY alliance
 
 
 --
--- Name: alliance_store_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: alliance_store_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY alliance_store
@@ -796,7 +726,7 @@ ALTER TABLE ONLY alliance_store
 
 
 --
--- Name: analytics_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: analytics_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY analytics
@@ -804,7 +734,7 @@ ALTER TABLE ONLY analytics
 
 
 --
--- Name: badge_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: badge_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY badge
@@ -812,7 +742,7 @@ ALTER TABLE ONLY badge
 
 
 --
--- Name: clan_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: clan_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY clan
@@ -820,7 +750,7 @@ ALTER TABLE ONLY clan
 
 
 --
--- Name: clan_store_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: clan_store_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY clan_store
@@ -828,7 +758,7 @@ ALTER TABLE ONLY clan_store
 
 
 --
--- Name: contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: contacts_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY contact
@@ -836,7 +766,7 @@ ALTER TABLE ONLY contact
 
 
 --
--- Name: currency_name_key; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: currency_name_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY currency
@@ -844,7 +774,7 @@ ALTER TABLE ONLY currency
 
 
 --
--- Name: currency_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: currency_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY currency
@@ -852,7 +782,7 @@ ALTER TABLE ONLY currency
 
 
 --
--- Name: inbox_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: inbox_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY inbox
@@ -860,7 +790,7 @@ ALTER TABLE ONLY inbox
 
 
 --
--- Name: journal_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: journal_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY journal
@@ -868,7 +798,7 @@ ALTER TABLE ONLY journal
 
 
 --
--- Name: mailqueue_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: mailqueue_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY mailqueue
@@ -876,7 +806,7 @@ ALTER TABLE ONLY mailqueue
 
 
 --
--- Name: member_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: member_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY member
@@ -884,7 +814,7 @@ ALTER TABLE ONLY member
 
 
 --
--- Name: member_store_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: member_store_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY member_store
@@ -892,7 +822,7 @@ ALTER TABLE ONLY member_store
 
 
 --
--- Name: objects_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: objects_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY object
@@ -900,7 +830,7 @@ ALTER TABLE ONLY object
 
 
 --
--- Name: password_reset_request_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: password_reset_request_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY password_reset_request
@@ -908,7 +838,7 @@ ALTER TABLE ONLY password_reset_request
 
 
 --
--- Name: wallet_pkey; Type: CONSTRAINT; Schema: public; Owner: simon; Tablespace: 
+-- Name: wallet_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
 ALTER TABLE ONLY wallet
@@ -916,98 +846,98 @@ ALTER TABLE ONLY wallet
 
 
 --
--- Name: alliance_id_key; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+-- Name: alliance_id_key; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE UNIQUE INDEX alliance_id_key ON alliance USING btree (id);
 
 
 --
--- Name: alliance_lower_idx; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+-- Name: alliance_lower_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE UNIQUE INDEX alliance_lower_idx ON alliance USING btree (lower(name));
 
 
 --
--- Name: alliance_store_alliance_id_key_idx; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+-- Name: alliance_store_alliance_id_key_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE UNIQUE INDEX alliance_store_alliance_id_key_idx ON alliance_store USING btree (alliance_id, key);
 
 
 --
--- Name: clan_id_key; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+-- Name: clan_id_key; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE UNIQUE INDEX clan_id_key ON clan USING btree (id);
 
 
 --
--- Name: clan_lower_idx; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+-- Name: clan_lower_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE UNIQUE INDEX clan_lower_idx ON clan USING btree (lower((name)::text));
 
 
 --
--- Name: clan_store_clan_id_key_idx; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+-- Name: clan_store_clan_id_key_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE UNIQUE INDEX clan_store_clan_id_key_idx ON clan_store USING btree (clan_id, key);
 
 
 --
--- Name: currency_id_key; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+-- Name: currency_id_key; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE UNIQUE INDEX currency_id_key ON currency USING btree (id);
 
 
 --
--- Name: member_email_key; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+-- Name: member_email_key; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE UNIQUE INDEX member_email_key ON member USING btree (lower((email)::text));
 
 
 --
--- Name: member_handle_key; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+-- Name: member_handle_key; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE UNIQUE INDEX member_handle_key ON member USING btree (lower((handle)::text));
 
 
 --
--- Name: member_id_key; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+-- Name: member_id_key; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE UNIQUE INDEX member_id_key ON member USING btree (id);
 
 
 --
--- Name: member_store_member_id_key_idx; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+-- Name: member_store_member_id_key_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE UNIQUE INDEX member_store_member_id_key_idx ON member_store USING btree (member_id, key);
 
 
 --
--- Name: wallet_id_key; Type: INDEX; Schema: public; Owner: simon; Tablespace: 
+-- Name: wallet_id_key; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
 CREATE UNIQUE INDEX wallet_id_key ON wallet USING btree (id);
 
 
 --
--- Name: update_wallet_balance; Type: TRIGGER; Schema: public; Owner: simon
+-- Name: update_wallet_balance; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER update_wallet_balance AFTER INSERT ON journal FOR EACH ROW EXECUTE PROCEDURE update_wallet_balance();
 
 
 --
--- Name: alliance_store_alliance_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: alliance_store_alliance_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY alliance_store
@@ -1015,7 +945,7 @@ ALTER TABLE ONLY alliance_store
 
 
 --
--- Name: badge_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: badge_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY badge
@@ -1023,7 +953,7 @@ ALTER TABLE ONLY badge
 
 
 --
--- Name: clan_alliance_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: clan_alliance_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY clan
@@ -1031,7 +961,7 @@ ALTER TABLE ONLY clan
 
 
 --
--- Name: clan_store_clan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: clan_store_clan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY clan_store
@@ -1039,7 +969,7 @@ ALTER TABLE ONLY clan_store
 
 
 --
--- Name: contacts_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: contacts_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY contact
@@ -1047,7 +977,7 @@ ALTER TABLE ONLY contact
 
 
 --
--- Name: contacts_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: contacts_owner_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY contact
@@ -1055,7 +985,7 @@ ALTER TABLE ONLY contact
 
 
 --
--- Name: inbox_from_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: inbox_from_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY inbox
@@ -1063,7 +993,7 @@ ALTER TABLE ONLY inbox
 
 
 --
--- Name: inbox_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: inbox_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY inbox
@@ -1071,7 +1001,7 @@ ALTER TABLE ONLY inbox
 
 
 --
--- Name: journal_from_wallet_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: journal_from_wallet_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY journal
@@ -1079,7 +1009,7 @@ ALTER TABLE ONLY journal
 
 
 --
--- Name: journal_to_wallet_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: journal_to_wallet_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY journal
@@ -1087,7 +1017,7 @@ ALTER TABLE ONLY journal
 
 
 --
--- Name: mailqueue_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: mailqueue_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY mailqueue
@@ -1095,7 +1025,7 @@ ALTER TABLE ONLY mailqueue
 
 
 --
--- Name: member_clan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: member_clan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY member
@@ -1103,7 +1033,7 @@ ALTER TABLE ONLY member
 
 
 --
--- Name: member_store_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: member_store_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY member_store
@@ -1111,7 +1041,7 @@ ALTER TABLE ONLY member_store
 
 
 --
--- Name: object_alliance_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: object_alliance_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY object
@@ -1119,7 +1049,7 @@ ALTER TABLE ONLY object
 
 
 --
--- Name: object_clan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: object_clan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY object
@@ -1127,7 +1057,7 @@ ALTER TABLE ONLY object
 
 
 --
--- Name: object_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: object_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY object
@@ -1135,7 +1065,7 @@ ALTER TABLE ONLY object
 
 
 --
--- Name: password_reset_request_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: password_reset_request_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY password_reset_request
@@ -1143,7 +1073,7 @@ ALTER TABLE ONLY password_reset_request
 
 
 --
--- Name: wallet_currency_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: wallet_currency_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY wallet
@@ -1151,7 +1081,7 @@ ALTER TABLE ONLY wallet
 
 
 --
--- Name: wallet_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: simon
+-- Name: wallet_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY wallet
@@ -1159,7 +1089,7 @@ ALTER TABLE ONLY wallet
 
 
 --
--- Name: public; Type: ACL; Schema: -; Owner: postgres
+-- Name: public; Type: ACL; Schema: -; Owner: -
 --
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
