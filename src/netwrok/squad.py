@@ -1,10 +1,10 @@
 import asyncio
 import aiopg
 
-import nwdb
-import core
-import client
-import room
+from . import nwdb
+from . import core
+from . import client
+from . import room
 
 
 @core.handler

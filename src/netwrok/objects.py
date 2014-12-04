@@ -2,8 +2,8 @@ import asyncio
 import aiopg
 import json
 
-import nwdb
-import core
+from . import nwdb
+from . import core
 
 @core.handler
 def set_object(client, key, value):

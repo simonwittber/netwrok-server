@@ -7,14 +7,15 @@ import sys
 import stat
 import imp
 
+import configparser
 from collections import defaultdict
 from subprocess import Popen
 
 import websockets
 
-import server
-import config
-import nwdb
+from .configuration import config
+from . import server
+from . import nwdb
 
 
 
@@ -47,11 +48,11 @@ def reloader(mp):
 
 def run():
     mp = None
-    if config.START_MAILER:
+    if config["DEFAULT"].get("START_MAILER") == "yes":
         mp = Popen(['python3', 'mailer.py'])
     try:
         start_server = websockets.serve(server.server, '0.0.0.0', 8765)
-        if config.RELOAD_ON_CHANGE:
+        if config["DEFAULT"].get("RELOAD_ON_CHANGE") == "yes":
             asyncio.async(reloader(mp))
         asyncio.get_event_loop().run_until_complete(start_server)
         asyncio.get_event_loop().run_forever()

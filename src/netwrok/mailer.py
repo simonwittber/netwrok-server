@@ -1,8 +1,8 @@
 import asyncio
 import aiopg
 import smtplib
-import nwdb
-import config
+from . import nwdb
+from . import config
 
 @asyncio.coroutine
 def mailer():

@@ -2,8 +2,8 @@ import asyncio
 import aiopg
 import hashlib
 
-import core
-import nwdb
+from . import core
+from . import nwdb
 
 @asyncio.coroutine
 def send(client, email, subject, body):

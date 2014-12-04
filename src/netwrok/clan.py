@@ -1,8 +1,8 @@
 import asyncio
 import aiopg
 
-import nwdb
-import core
+from . import nwdb
+from . import core
 
 
 

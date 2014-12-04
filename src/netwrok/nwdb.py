@@ -1,6 +1,7 @@
 import asyncio
 from aiopg.pool import create_pool
-import config
+
+from .configuration import config
 
 pool = None
 
@@ -8,7 +9,7 @@ pool = None
 def connection():
     global pool
     if pool is None:
-        pool = yield from create_pool(config.DSN)
+        pool = yield from create_pool(config["DEFAULT"]["DSN"])
     conn = yield from pool
     return conn
 

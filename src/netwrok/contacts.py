@@ -1,8 +1,8 @@
 import asyncio
 import aiopg
 
-import core
-import nwdb
+from . import core
+from . import nwdb
 
 
 @core.handler

@@ -6,19 +6,19 @@ from collections import defaultdict
 
 import websockets
 
-import client
+from .configuration import config
+from . import client
 #modules that handle received messages
-import core
-import nwdb
-import config
-import mailqueue
-import member
-import contacts
-import inbox
-import clan
-import analytics
-import wallet
-import squad
+from . import core
+from . import nwdb
+from . import mailqueue
+from . import member
+from . import contacts
+from . import inbox
+from . import clan
+from . import analytics
+from . import wallet
+from . import squad
 
 
 @asyncio.coroutine
@@ -33,7 +33,7 @@ def server(ws, path):
     while not c.dead:
         msg = yield from ws.recv()
         if msg is None: break
-        if config.LOG_MESSAGES:
+        if config["DEFAULT"].get("LOG_MESSAGES") == "yes":
             print("< " + str(msg))
         try:
             obj = json.loads(msg)

@@ -5,8 +5,8 @@ import random
 import asyncio
 import json
 
-import room
-import config
+from . import room
+from .configuration import config
 
 clients = dict()
 
@@ -87,7 +87,7 @@ class Client:
         """Send a msg to the client"""
         if self.dead: return
         payload = json.dumps(dict(name=msg, type=mType, id=msgId, args=list(args)))
-        if config.LOG_MESSAGES:
+        if config["DEFAULT"].get("LOG_MESSAGES") == "yes":
             print("> " + payload)
         try:
             yield from self.ws.send(payload)

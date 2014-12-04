@@ -4,10 +4,10 @@ import asyncio
 
 import aiopg
 
-import nwdb
-import core
-import mailqueue
-import room
+from . import nwdb
+from . import core
+from . import mailqueue
+from . import room
 
 
 @core.function
