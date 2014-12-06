@@ -1,8 +1,8 @@
 import asyncio
 import aiopg
 import smtplib
-from . import nwdb
-from . import config
+from netwrok import nwdb
+from netwrok.configuration import config
 
 @asyncio.coroutine
 def mailer():
@@ -21,13 +21,13 @@ def mailer():
             """)
             rs = yield from cursor.fetchone()
             if rs is None:
-                yield from asyncio.sleep(config.MAILER_IDLE_TIME)
+                yield from asyncio.sleep(config["MAIL"]["MAILER_IDLE_TIME"])
             else:
                 sent = False
                 error = False
                 try:
                     server = smtplib.SMTP('localhost')
-                    fromaddr = config.FROM_ADDRESS
+                    fromaddr = config["MAIL"]["FROM_ADDRESS"]
                     toaddrs = [rs[2]]
                     msg = "From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s"%(fromaddr, rs[2], rs[3], rs[4])
                     server.sendmail(fromaddr, toaddrs, msg)

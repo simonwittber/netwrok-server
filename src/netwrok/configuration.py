@@ -1,10 +1,14 @@
 from pkg_resources import Requirement, resource_filename
 import sys
-import configparser
+import json
+
 config_file = resource_filename(Requirement.parse("NetWrok-Server"),"netwrok/data/netwrok_default.ini")
-config = configparser.ConfigParser()
-config.read(config_file)
+config = {}
+
+with open(config_file,"r") as f:
+    config.update(json.load(f))
 
 if len(sys.argv) > 1:
     config_file = sys.argv[1]
-    config.read(config_file)
+    with open(config_file,"r") as f:
+        config.update(json.load(f))

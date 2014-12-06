@@ -19,7 +19,7 @@ def authenticate(client, email, password):
     welcome message.
     """
     hash = client.uid
-    with (yield from nwdb.connection()) as conn:
+    with (yield from nwdb.connection(readonly=True)) as conn:
         cursor = yield from conn.cursor()
         yield from cursor.execute("""
         select A.id, A.handle, A.email, A.password, A.clan_id, A.roles, B.alliance_id, B.name, C.name

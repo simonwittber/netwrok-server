@@ -1,13 +1,12 @@
 from pkg_resources import Requirement, resource_filename
 import sys
-import configparser
 import argparse
 import psycopg2
+import json
 
 config_file = resource_filename(Requirement.parse("NetWrok-Server"),"netwrok/data/netwrok_default.ini")
-config = configparser.ConfigParser()
-config.read(config_file)
-
+with open(config_file, "r") as f:
+    config = json.load(f)
 
 
 def create():
@@ -26,11 +25,12 @@ def create():
     cursor = conn.cursor()
     cursor.execute("begin")
     cursor.execute(open(sql_file, "r").read())
-    config["DEFAULT"]["DSN"] = args.dsn
+    config["DB"]["WRITE"] = args.dsn
+    config["DB"]["READ"] = [args.dsn,args.dsn,args.dsn]
     new_config_file = "netwrok_%s.ini"%args.name
     print("Writing config file to: %s"%new_config_file)
     with open(new_config_file, "w") as nf:
-        config.write(nf)
+        json.dump(nf, sort_keys=True, indent=4, separators=(',', ': '))
     cursor.execute("commit")
     cursor.close()
     print("You can now start the server with 'netwrok %s'"%new_config_file)

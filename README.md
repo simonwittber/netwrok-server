@@ -14,8 +14,18 @@ adaptable, and easily extended by the backend game programmer. The
 database schema must be simple and easy to understand, and the network
 traffic must be human understandable and easy to debug.
 
+Requirements
+------------
+ - Python >= 3.4
+ - aiopg: https://github.com/aio-libs/aiopg
+ - websockets: https://github.com/aaugustin/websockets
+ - PostgreSQL >= 9.3
+
+
 Features
 ========
+
+NetWrok works with a single PostgreSQL instance, or a clustered setup.
 
 Members
 -------

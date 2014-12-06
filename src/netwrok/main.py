@@ -7,7 +7,6 @@ import sys
 import stat
 import imp
 
-import configparser
 from collections import defaultdict
 from subprocess import Popen
 
@@ -16,6 +15,10 @@ import websockets
 from .configuration import config
 from . import server
 from . import nwdb
+
+
+from pkg_resources import Requirement, resource_filename
+mailer = resource_filename(Requirement.parse("NetWrok-Server"),"netwrok/mailer.py")
 
 
 
@@ -43,16 +46,16 @@ def reloader(mp):
                     mp.terminate() 
                 yield from nwdb.close()
                 yield from server.close()
-                os.execl(__file__, "")
+                os.execl(sys.argv[0], " ".join(sys.argv[1:]))
 
 
 def run():
     mp = None
-    if config["DEFAULT"].get("START_MAILER") == "yes":
-        mp = Popen(['python3', 'mailer.py'])
+    if config["MAIL"]["START_MAILER"]:
+        mp = Popen(['python3', mailer])
     try:
         start_server = websockets.serve(server.server, '0.0.0.0', 8765)
-        if config["DEFAULT"].get("RELOAD_ON_CHANGE") == "yes":
+        if config["SERVER"]["RELOAD_ON_CHANGE"]:
             asyncio.async(reloader(mp))
         asyncio.get_event_loop().run_until_complete(start_server)
         asyncio.get_event_loop().run_forever()

@@ -1,21 +1,33 @@
+import random
 import asyncio
 from aiopg.pool import create_pool
 
 from .configuration import config
 
-pool = None
+pools = {}
 
 @asyncio.coroutine
-def connection():
-    global pool
+def connection(readonly=False):
+    if readonly:
+        dsn = random.choice(config["DB"]["READ"])
+    else:
+        dsn = config["DB"]["WRITE"]
+    conn = yield from get_connection(dsn)
+    return conn
+
+
+@asyncio.coroutine
+def get_connection(dsn):
+    pool = pools.get(dsn, None)
     if pool is None:
-        pool = yield from create_pool(config["DEFAULT"]["DSN"])
+        pool = pools[dsn] = yield from create_pool(dsn)
     conn = yield from pool
     return conn
 
+
 @asyncio.coroutine
 def close():
-    if pool is not None: 
+    for pool in pools.values():
         pool.terminate()
         yield from pool.wait_closed()
 

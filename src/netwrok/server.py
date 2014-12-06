@@ -33,7 +33,7 @@ def server(ws, path):
     while not c.dead:
         msg = yield from ws.recv()
         if msg is None: break
-        if config["DEFAULT"].get("LOG_MESSAGES") == "yes":
+        if config["SERVER"]["LOG_MESSAGES"]:
             print("< " + str(msg))
         try:
             obj = json.loads(msg)

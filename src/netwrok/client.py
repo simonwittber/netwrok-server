@@ -87,7 +87,7 @@ class Client:
         """Send a msg to the client"""
         if self.dead: return
         payload = json.dumps(dict(name=msg, type=mType, id=msgId, args=list(args)))
-        if config["DEFAULT"].get("LOG_MESSAGES") == "yes":
+        if config["SERVER"]["LOG_MESSAGES"]:
             print("> " + payload)
         try:
             yield from self.ws.send(payload)
