@@ -210,7 +210,7 @@ def set_object(client, key, value):
         if rs is None:
             yield from cursor.execute("""
             insert into member_store(member_id, key, value)
-            select %s, %s, %ss
+            select %s, %s, %s
             """, [client.member_id, key, value])
 
 
@@ -231,4 +231,20 @@ def get_object(client, key):
         if rs is not None:
             rs = json.loads(rs[0])
         return rs
+
+
+@core.function
+def get_object_keys(client):
+    """
+    Retrieves all keys stored by the member.
+    """
+    client.require_auth()
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        yield from cursor.execute("""
+        select key from member_store
+        where member_id = %s 
+        """, [client.member_id])
+        rs = yield from cursor.fetchall()
+        return list(i[0] for i in rs)
 

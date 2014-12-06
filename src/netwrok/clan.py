@@ -48,6 +48,22 @@ def get_object(client, key):
 
 
 @core.function
+def get_object_keys(client):
+    """
+    Retrieves all keys stored by the clan.
+    """
+    client.require_auth()
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        yield from cursor.execute("""
+        select key from clan_store
+        where clan_id = %s 
+        """, [client.clan_id])
+        rs = yield from cursor.fetchall()
+        return list(i[0] for i in rs)
+
+
+@core.function
 def members(client):
     """
     Fetch the members of the clan that the user belongs to.

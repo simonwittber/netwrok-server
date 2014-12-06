@@ -41,6 +41,22 @@ def get_object(client, key):
 
 
 @core.function
+def get_object_keys(client):
+    """
+    Retrieves all keys stored by the alliance.
+    """
+    client.require_auth()
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        yield from cursor.execute("""
+        select key from alliance_store
+        where alliance_id = %s 
+        """, [client.alliance_id])
+        rs = yield from cursor.fetchall()
+        return list(i[0] for i in rs)
+
+
+@core.function
 def members(client):
     """
     Fetch the members of the alliance that the user belongs to.
