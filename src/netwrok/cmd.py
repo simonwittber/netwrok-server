@@ -30,7 +30,7 @@ def create():
     new_config_file = "netwrok_%s.ini"%args.name
     print("Writing config file to: %s"%new_config_file)
     with open(new_config_file, "w") as nf:
-        json.dump(nf, sort_keys=True, indent=4, separators=(',', ': '))
+        json.dump(config, nf, sort_keys=True, indent=4, separators=(',', ': '))
     cursor.execute("commit")
     cursor.close()
     print("You can now start the server with 'netwrok %s'"%new_config_file)
