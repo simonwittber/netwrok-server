@@ -112,7 +112,8 @@ CREATE TABLE alliance_store (
     alliance_id integer NOT NULL,
     key text NOT NULL,
     value text,
-    created timestamp without time zone DEFAULT now() NOT NULL
+    created timestamp without time zone DEFAULT now() NOT NULL,
+    row_version integer DEFAULT 0
 );
 
 
@@ -247,7 +248,8 @@ CREATE TABLE clan_store (
     clan_id integer NOT NULL,
     key text NOT NULL,
     value text,
-    created timestamp without time zone DEFAULT now() NOT NULL
+    created timestamp without time zone DEFAULT now() NOT NULL,
+    row_version integer DEFAULT 0
 );
 
 
@@ -477,7 +479,8 @@ CREATE TABLE member_store (
     member_id integer NOT NULL,
     key text NOT NULL,
     value text,
-    created timestamp without time zone DEFAULT now() NOT NULL
+    created timestamp without time zone DEFAULT now() NOT NULL,
+    row_version integer DEFAULT 0
 );
 
 
