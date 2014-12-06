@@ -15,7 +15,7 @@ import websockets
 from .configuration import config
 from . import server
 from . import nwdb
-
+from . import ipn
 
 from pkg_resources import Requirement, resource_filename
 mailer = resource_filename(Requirement.parse("NetWrok-Server"),"netwrok/mailer.py")
@@ -57,8 +57,11 @@ def run():
         start_server = websockets.serve(server.server, '0.0.0.0', 8765)
         if config["SERVER"]["RELOAD_ON_CHANGE"]:
             asyncio.async(reloader(mp))
-        asyncio.get_event_loop().run_until_complete(start_server)
-        asyncio.get_event_loop().run_forever()
+        loop = asyncio.get_event_loop()
+        asyncio.async(start_server) 
+        if config["IPN"]["START_IPN_SERVER"]:
+            asyncio.async(ipn.init(loop)) 
+        loop.run_forever()
 
     finally:
         if mp is not None:
