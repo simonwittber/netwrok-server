@@ -48,6 +48,9 @@ def reloader(mp):
                 yield from server.close()
                 os.execl(sys.argv[0], " ".join(sys.argv[1:]))
 
+def load_extensions(exts):
+    for name,path in exts.items():
+        imp.load_source(name, path)
 
 def run():
     mp = None
@@ -61,6 +64,9 @@ def run():
         asyncio.async(start_server) 
         if config["IPN"]["START_IPN_SERVER"]:
             asyncio.async(ipn.init(loop)) 
+        ext = config["SERVER"].get("EXT", None)
+        if ext is not None:
+            load_extensions(ext)
         loop.run_forever()
 
     finally:
@@ -69,5 +75,3 @@ def run():
         
 
 
-if __name__ == "__main__":
-    run()
