@@ -6,9 +6,19 @@ import asyncio
 import json
 
 from . import room
+from . import presence
+from . import contacts
 from .configuration import config
 
+
 clients = dict()
+register = presence.PresenceRegister()
+
+def notify_presence(event, listener_id, contact_id):
+    if listener_id in clients:
+        asyncio.async(clients[listener_id].notify_presence(event, contact_id))
+
+register.notify = notify_presence
 
 
 class AuthException(Exception):
@@ -32,6 +42,10 @@ class Client:
         self.clan_name = None
         self.alliance_name = None
         self.member_info = {}
+
+    @asyncio.coroutine
+    def notify_presence_change(client, event, contact_id):
+        yield from self.send("presence", event, contact_id)
 
     @asyncio.coroutine
     def join(self, room):
@@ -68,8 +82,14 @@ class Client:
         if role not in self.roles or alliance_id != self.alliance_id:
             raise AuthException()
 
+    @asyncio.coroutine
     def on_authenticated(self):
         clients[self.member_id] = self
+        register.add(self.member_id)
+        c = yield from contacts.fetch(self)
+        for i in c:
+            register.register_interest(self.member_id, i["id"])
+
 
     @asyncio.coroutine
     def process_return(self, msgId, obj):
@@ -103,6 +123,7 @@ class Client:
 
     @asyncio.coroutine
     def close(self):
+        register.remove(self.member_id)
         self.dead = True
         if self.member_id in clients:
             clients.pop(self.member_id)

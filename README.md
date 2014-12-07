@@ -14,6 +14,11 @@ adaptable, and easily extended by the backend game programmer. The
 database schema must be simple and easy to understand, and the network
 traffic must be human understandable and easy to debug.
 
+Status
+------
+Right now, NetWrok is considered pre-production. Not much is tested,
+and there could be some crazy implementations in here!
+
 Requirements
 ------------
  - Python >= 3.4

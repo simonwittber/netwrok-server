@@ -3,6 +3,7 @@ import aiopg
 
 from . import core
 from . import nwdb
+from . import presence
 
 
 @core.handler
@@ -11,6 +12,7 @@ def add(client, member_id, type):
     Add another member to the member's contact list.
     """
     client.require_auth()
+    presence.register_interest(member_id, client)
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         yield from cursor.execute("""

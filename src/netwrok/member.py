@@ -62,7 +62,7 @@ def authenticate(client, email, password):
             yield from asyncio.sleep(3)
         client.authenticated = authenticated
         if authenticated:
-            client.on_authenticated()
+            yield from client.on_authenticated()
             yield from client.send("member.info", client.member_info)
             if client.clan_id > 0:
                 clan_room = room.Room.get("Clan " + str(client.clan_id))
