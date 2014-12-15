@@ -48,16 +48,18 @@ def reloader(mp):
                 yield from server.close()
                 os.execl(sys.argv[0], " ".join(sys.argv[1:]))
 
+
 def load_extensions(exts):
     for name,path in exts.items():
         imp.load_source(name, path)
+
 
 def run():
     mp = None
     if config["MAIL"]["START_MAILER"]:
         mp = Popen(['python3', mailer])
     try:
-        start_server = websockets.serve(server.server, '0.0.0.0', 8765)
+        start_server = websockets.serve(server.server, config["SERVER"]["INTERFACE"], config["SERVER"]["PORT"])
         if config["SERVER"]["RELOAD_ON_CHANGE"]:
             asyncio.async(reloader(mp))
         loop = asyncio.get_event_loop()

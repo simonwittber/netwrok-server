@@ -36,7 +36,7 @@ def fetch(client):
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         yield from cursor.execute("""
-        select A.id, B.handle, member_id, type, created
+        select A.id, B.handle, A.member_id, A.type, A.created
         from contact A
         inner join member B on A.member_id = B.id
         where owner_id = %s

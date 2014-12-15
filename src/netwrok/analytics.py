@@ -5,7 +5,7 @@ from . import nwdb
 from . import core
 
 @core.handler
-def register(client, member_id, path, event):
+def register(client, path, event):
     """
     Register an event occuring at path. Created time is automatically added.
     Useful for generic analytics type stuff.

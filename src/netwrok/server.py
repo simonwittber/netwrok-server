@@ -8,6 +8,7 @@ import websockets
 
 from .configuration import config
 from . import client
+from . import exceptions
 #modules that handle received messages
 from . import core
 from . import nwdb
@@ -20,11 +21,9 @@ from . import analytics
 from . import wallet
 from . import squad
 
-
 @asyncio.coroutine
 def close():
-    for c in list(client.clients.values()):
-        yield from c.ws.close()
+    yield from client.Client.close_all()
 
 @asyncio.coroutine
 def server(ws, path):
@@ -47,7 +46,7 @@ def server(ws, path):
                 yield from handle_event(c, obj)
             if mType == "fn":
                 yield from handle_function(c, obj)
-        except client.AuthException:
+        except exceptions.AuthException:
             yield from c.send("unauthorized")
         except Exception as e:
             traceback.print_exc(file=sys.stdout)

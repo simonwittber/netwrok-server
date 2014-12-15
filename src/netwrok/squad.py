@@ -14,6 +14,14 @@ def send(client, msg, *args):
         client.squad.send(msg, client.member_id, *args)
     
 
+@core.function
+def members(client):
+    client.require_auth()
+    if client.squad is None:
+        return None
+    return [i.member_id for i in client.squad.members]
+
+
 @core.handler
 def invite(client, member_id):
     client.require_auth()

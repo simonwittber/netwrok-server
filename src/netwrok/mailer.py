@@ -26,7 +26,7 @@ def mailer():
                 sent = False
                 error = False
                 try:
-                    server = smtplib.SMTP('localhost')
+                    server = smtplib.SMTP(config["MAIL"]["SERVER"])
                     fromaddr = config["MAIL"]["FROM_ADDRESS"]
                     toaddrs = [rs[2]]
                     msg = "From: %s\r\nTo: %s\r\nSubject: %s\r\n\r\n%s"%(fromaddr, rs[2], rs[3], rs[4])

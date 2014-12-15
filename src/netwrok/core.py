@@ -3,6 +3,7 @@ import asyncio
 event_handlers = dict()
 function_handlers = dict()
 
+
 def handler(fn):
     """
     Register a function to receive and handle events.

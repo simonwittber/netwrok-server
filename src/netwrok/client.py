@@ -5,27 +5,35 @@ import random
 import asyncio
 import json
 
+from . import exceptions
 from . import room
 from . import presence
 from . import contacts
 from .configuration import config
 
 
-clients = dict()
-register = presence.PresenceRegister()
 
-def notify_presence(event, listener_id, contact_id):
-    if listener_id in clients:
-        asyncio.async(clients[listener_id].notify_presence(event, contact_id))
+class LocalPresenceRegister(presence.PresenceRegister):
+    def __init__(self, clients):
+        super(LocalPresenceRegister, self).__init__()
+        self.clients = clients
 
-register.notify = notify_presence
+    def notify(self, event, listener_id, contact_id):
+        if listener_id in self.clients:
+            asyncio.async(self.clients[listener_id].notify_presence(event, contact_id))
 
-
-class AuthException(Exception):
-    pass
 
 
 class Client:
+    clients = dict()
+    register = LocalPresenceRegister(clients)
+    
+    @classmethod
+    @asyncio.coroutine
+    def close_all(class_):
+        for c in list(class_.clients.values()):
+            yield from c.ws.close()
+
     def __init__(self, ws):
         self.session = {}
         self.ws = ws
@@ -60,35 +68,35 @@ class Client:
     def require_auth(self):
         """Raise exception if client is not authenticated"""
         if not self.authenticated:
-            raise AuthException()
+            raise exceptions.AuthException()
 
     def require_role(self, role):
         """Raise exception if client is not authenticated"""
         self.require_auth()
         if role not in self.roles:
-            raise AuthException()
+            raise exceptions.AuthException()
 
     def require_clan_role(self, clan_id, role):
         """Raise exception if client is not authenticated"""
         self.require_auth()
         role = "Clan " + role
         if role not in self.roles or clan_id != self.clan_id:
-            raise AuthException()
+            raise exceptions.AuthException()
 
     def require_alliance_role(self, alliance_id, role):
         """Raise exception if client is not authenticated"""
         self.require_auth()
         role = "Alliance " + role
         if role not in self.roles or alliance_id != self.alliance_id:
-            raise AuthException()
+            raise exceptions.AuthException()
 
     @asyncio.coroutine
     def on_authenticated(self):
-        clients[self.member_id] = self
-        register.add(self.member_id)
+        self.clients[self.member_id] = self
+        self.register.add(self.member_id)
         c = yield from contacts.fetch(self)
         for i in c:
-            register.register_interest(self.member_id, i["id"])
+            self.register.register_interest(self.member_id, i["id"])
 
 
     @asyncio.coroutine
@@ -118,15 +126,15 @@ class Client:
     def whisper(self, member_id, msg, *args):
         """Send a msg directly to a connected user"""
         self.require_auth()
-        c = clients[member_id]
+        c = self.clients[member_id]
         yield from c.send("whispers", msg, self.member_id, *args)
 
     @asyncio.coroutine
     def close(self):
-        register.remove(self.member_id)
+        self.register.remove(self.member_id)
         self.dead = True
-        if self.member_id in clients:
-            clients.pop(self.member_id)
+        if self.member_id in self.clients:
+            self.clients.pop(self.member_id)
         for r in self.rooms:
             r.remove(self)
 
