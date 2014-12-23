@@ -26,6 +26,20 @@ COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 SET search_path = public, pg_catalog;
 
 --
+-- Name: add_new_currency_to_wallets(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION add_new_currency_to_wallets() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$BEGIN
+insert into wallet(member_id, currency_id, balance)
+select id, NEW.id, 0 
+from member;
+return NEW;
+END;$$;
+
+
+--
 -- Name: add_role(integer, text); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -37,6 +51,18 @@ update member set roles = roles || text($2) where id = $1
 returning roles;
 
 $_$;
+
+
+--
+-- Name: create_wallets_for_new_member(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION create_wallets_for_new_member() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$BEGIN
+insert into wallet(member_id, currency_id, balance) select NEW.id, id, 0 from currency;
+return NEW;
+END;$$;
 
 
 --
@@ -54,18 +80,29 @@ $_$;
 
 
 --
--- Name: update_wallet_balance(); Type: FUNCTION; Schema: public; Owner: -
+-- Name: transfer_currency(integer, integer, integer, double precision); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION update_wallet_balance() RETURNS trigger
+CREATE FUNCTION transfer_currency(currency_id integer, from_member_id integer, to_member_id integer, amount double precision) RETURNS integer
     LANGUAGE plpgsql
-    AS $$BEGIN
-update wallet set balance = balance + NEW.income - NEW.expense
-where id = NEW.dst_wallet_id;
-update wallet set balance = balance - NEW.income + NEW.expense
-where id = NEW.src_wallet_id;
-return NEW;
-END;$$;
+    AS $$DECLARE
+tx_id int4;
+src_wallet_id int4;
+dst_wallet_id int4;
+
+BEGIN
+insert into wallet_transaction(created) select now() returning id into tx_id;
+select id into src_wallet_id from wallet A where member_id = from_member_id and A.currency_id = transfer_currency.currency_id;
+select id into dst_wallet_id from wallet A where member_id = to_member_id and A.currency_id = transfer_currency.currency_id;
+
+insert into journal(wallet_id, tx_id, credit, debit) select src_wallet_id, tx_id, 0, amount;
+insert into journal(wallet_id, tx_id, credit, debit) select dst_wallet_id, tx_id, amount, 0;
+
+update wallet set balance = balance + amount where id = dst_wallet_id;
+update wallet set balance = balance - amount where id = src_wallet_id;
+return tx_id;
+END;
+$$;
 
 
 SET default_tablespace = '';
@@ -373,12 +410,10 @@ ALTER SEQUENCE inbox_id_seq OWNED BY inbox.id;
 
 CREATE TABLE journal (
     id integer NOT NULL,
-    src_wallet_id integer NOT NULL,
-    dst_wallet_id integer,
-    income double precision NOT NULL,
+    wallet_id integer NOT NULL,
+    credit double precision NOT NULL,
     tx_id integer NOT NULL,
-    created timestamp without time zone DEFAULT now(),
-    expense double precision NOT NULL
+    debit double precision NOT NULL
 );
 
 
@@ -576,8 +611,7 @@ CREATE TABLE wallet (
     id integer NOT NULL,
     member_id integer,
     currency_id integer NOT NULL,
-    balance double precision DEFAULT 0 NOT NULL,
-    name text
+    balance double precision DEFAULT 0 NOT NULL
 );
 
 
@@ -598,6 +632,35 @@ CREATE SEQUENCE wallet_id_seq
 --
 
 ALTER SEQUENCE wallet_id_seq OWNED BY wallet.id;
+
+
+--
+-- Name: wallet_transaction; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE wallet_transaction (
+    id integer NOT NULL,
+    created timestamp without time zone DEFAULT now()
+);
+
+
+--
+-- Name: wallet_transaction_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE wallet_transaction_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: wallet_transaction_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE wallet_transaction_id_seq OWNED BY wallet_transaction.id;
 
 
 --
@@ -710,6 +773,13 @@ ALTER TABLE ONLY password_reset_request ALTER COLUMN id SET DEFAULT nextval('pas
 --
 
 ALTER TABLE ONLY wallet ALTER COLUMN id SET DEFAULT nextval('wallet_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY wallet_transaction ALTER COLUMN id SET DEFAULT nextval('wallet_transaction_id_seq'::regclass);
 
 
 --
@@ -849,6 +919,14 @@ ALTER TABLE ONLY wallet
 
 
 --
+-- Name: wallet_transaction_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY wallet_transaction
+    ADD CONSTRAINT wallet_transaction_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: alliance_id_key; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -933,10 +1011,31 @@ CREATE UNIQUE INDEX wallet_id_key ON wallet USING btree (id);
 
 
 --
--- Name: update_wallet_balance; Type: TRIGGER; Schema: public; Owner: -
+-- Name: wallet_member_id_currency_id_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
 --
 
-CREATE TRIGGER update_wallet_balance AFTER INSERT ON journal FOR EACH ROW EXECUTE PROCEDURE update_wallet_balance();
+CREATE UNIQUE INDEX wallet_member_id_currency_id_idx ON wallet USING btree (member_id, currency_id);
+
+
+--
+-- Name: wallet_transaction_id_key; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE UNIQUE INDEX wallet_transaction_id_key ON wallet_transaction USING btree (id);
+
+
+--
+-- Name: add_new_currency_to_wallets; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER add_new_currency_to_wallets AFTER INSERT ON currency FOR EACH ROW EXECUTE PROCEDURE add_new_currency_to_wallets();
+
+
+--
+-- Name: create_wallets; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER create_wallets AFTER INSERT ON member FOR EACH ROW EXECUTE PROCEDURE create_wallets_for_new_member();
 
 
 --
@@ -1008,15 +1107,15 @@ ALTER TABLE ONLY inbox
 --
 
 ALTER TABLE ONLY journal
-    ADD CONSTRAINT journal_from_wallet_id_fkey FOREIGN KEY (src_wallet_id) REFERENCES wallet(id) ON DELETE CASCADE;
+    ADD CONSTRAINT journal_from_wallet_id_fkey FOREIGN KEY (wallet_id) REFERENCES wallet(id) ON DELETE CASCADE;
 
 
 --
--- Name: journal_to_wallet_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: journal_tx_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY journal
-    ADD CONSTRAINT journal_to_wallet_id_fkey FOREIGN KEY (dst_wallet_id) REFERENCES wallet(id) ON DELETE CASCADE;
+    ADD CONSTRAINT journal_tx_id_fkey FOREIGN KEY (tx_id) REFERENCES wallet_transaction(id) ON DELETE CASCADE;
 
 
 --
