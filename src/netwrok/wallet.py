@@ -41,3 +41,15 @@ def journal(client):
         return [dict(i) for i in rs]
 
 
+@core.function
+def spend(client, currency_id, amount, member_id, narrative):
+    client.require_auth()
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        yield from cursor.execute("""
+        select transfer_currency(%s, %s, %s, %s, %s) as tx_id
+        """, [currency_id, client.session["member_id"], member_id, amount, narrative])
+        rs = yield from cursor.fetchone()
+        return rs["tx_id"]
+
+
