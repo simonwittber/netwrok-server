@@ -565,40 +565,6 @@ ALTER SEQUENCE member_store_id_seq OWNED BY member_store.id;
 
 
 --
--- Name: object; Type: TABLE; Schema: public; Owner: -; Tablespace: 
---
-
-CREATE TABLE object (
-    id integer NOT NULL,
-    member_id integer NOT NULL,
-    key character varying(255) NOT NULL,
-    value text,
-    created timestamp without time zone DEFAULT now(),
-    clan_id integer,
-    alliance_id integer
-);
-
-
---
--- Name: object_id_seq; Type: SEQUENCE; Schema: public; Owner: -
---
-
-CREATE SEQUENCE object_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: object_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
---
-
-ALTER SEQUENCE object_id_seq OWNED BY object.id;
-
-
---
 -- Name: password_reset_request; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -785,13 +751,6 @@ ALTER TABLE ONLY member_store ALTER COLUMN id SET DEFAULT nextval('member_store_
 -- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
-ALTER TABLE ONLY object ALTER COLUMN id SET DEFAULT nextval('object_id_seq'::regclass);
-
-
---
--- Name: id; Type: DEFAULT; Schema: public; Owner: -
---
-
 ALTER TABLE ONLY password_reset_request ALTER COLUMN id SET DEFAULT nextval('password_reset_request_id_seq'::regclass);
 
 
@@ -919,14 +878,6 @@ ALTER TABLE ONLY member
 
 ALTER TABLE ONLY member_store
     ADD CONSTRAINT member_store_pkey PRIMARY KEY (id);
-
-
---
--- Name: objects_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
---
-
-ALTER TABLE ONLY object
-    ADD CONSTRAINT objects_pkey PRIMARY KEY (id);
 
 
 --
@@ -1167,30 +1118,6 @@ ALTER TABLE ONLY member
 
 ALTER TABLE ONLY member_store
     ADD CONSTRAINT member_store_member_id_fkey FOREIGN KEY (member_id) REFERENCES member(id);
-
-
---
--- Name: object_alliance_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY object
-    ADD CONSTRAINT object_alliance_id_fkey FOREIGN KEY (alliance_id) REFERENCES alliance(id) ON DELETE CASCADE;
-
-
---
--- Name: object_clan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY object
-    ADD CONSTRAINT object_clan_id_fkey FOREIGN KEY (clan_id) REFERENCES clan(id) ON DELETE CASCADE;
-
-
---
--- Name: object_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY object
-    ADD CONSTRAINT object_member_id_fkey FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE;
 
 
 --
