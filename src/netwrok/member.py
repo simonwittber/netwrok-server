@@ -64,7 +64,7 @@ def authenticate(client, email, password):
         if authenticated:
             yield from client.on_authenticated()
             yield from client.send("member.info", client.member_info)
-            if client.clan_id > 0:
+            if client.clan_id is not None:
                 clan_room = room.Room.get("Clan " + str(client.clan_id))
                 yield from client.join(clan_room)
 
