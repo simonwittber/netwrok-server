@@ -1,8 +1,6 @@
-Change journal to double entry accounting style ledger
 Implement public badge API
 Inventory system
 Leaderboard System
-Alliance System
 "Easy to read and write" test tool.
 Finish PayPal IPN
 Expose runtime stats via HTTP
