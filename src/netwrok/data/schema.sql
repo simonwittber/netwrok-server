@@ -105,6 +105,32 @@ END;
 $$;
 
 
+--
+-- Name: transfer_currency(integer, integer, integer, double precision, text); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION transfer_currency(currency_id integer, from_member_id integer, to_member_id integer, amount double precision, narrative text) RETURNS integer
+    LANGUAGE plpgsql
+    AS $$DECLARE
+tx_id int4;
+src_wallet_id int4;
+dst_wallet_id int4;
+
+BEGIN
+insert into wallet_transaction(narrative, created) select narrative, now() returning id into tx_id;
+select id into src_wallet_id from wallet A where member_id = from_member_id and A.currency_id = transfer_currency.currency_id;
+select id into dst_wallet_id from wallet A where member_id = to_member_id and A.currency_id = transfer_currency.currency_id;
+
+insert into journal(wallet_id, tx_id, credit, debit) select src_wallet_id, tx_id, 0, amount;
+insert into journal(wallet_id, tx_id, credit, debit) select dst_wallet_id, tx_id, amount, 0;
+
+update wallet set balance = balance + amount where id = dst_wallet_id;
+update wallet set balance = balance - amount where id = src_wallet_id;
+return tx_id;
+END;
+$$;
+
+
 SET default_tablespace = '';
 
 SET default_with_oids = false;
@@ -640,7 +666,8 @@ ALTER SEQUENCE wallet_id_seq OWNED BY wallet.id;
 
 CREATE TABLE wallet_transaction (
     id integer NOT NULL,
-    created timestamp without time zone DEFAULT now()
+    created timestamp without time zone DEFAULT now(),
+    narrative text
 );
 
 

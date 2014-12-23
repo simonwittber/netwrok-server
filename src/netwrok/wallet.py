@@ -30,11 +30,12 @@ def journal(client):
     with (yield from nwdb.connection()) as conn:
         cursor = yield from conn.cursor()
         yield from cursor.execute("""
-        select A.id, A.created, B.name as "src.wallet.name", C.name as "dst.wallet.name", A.income, A.expense, A.src_wallet_id, A.dst_wallet_id
+        select A.tx_id, A.wallet_id, A.debit, A.credit, B.currency_id, C.narrative
         from journal A
-        inner join wallet B on A.src_wallet_id = B.id
-        inner join wallet C on A.dst_wallet_id = C.id
-        where %s in (B.member_id, C.member_id)
+        inner join wallet B on B.id = A.wallet_id
+        inner join wallet_transaction C on C.id = A.tx_id
+        where B.member_id = %s
+        order by C.created
         """, [client.session["member_id"]])
         rs = yield from cursor.fetchall()
         return [dict(i) for i in rs]
