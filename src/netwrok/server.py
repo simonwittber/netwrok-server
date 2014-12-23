@@ -49,7 +49,7 @@ def server(ws, path):
         except exceptions.AuthException:
             yield from c.send("unauthorized")
         except Exception as e:
-            logging.debug(e)
+            logging.warning(e)
             yield from c.send("exception", obj, str(type(e).__name__), str(e))
 
     yield from c.close()
