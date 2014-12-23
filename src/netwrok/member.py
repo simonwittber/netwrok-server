@@ -135,7 +135,7 @@ def password_reset(client, email, token, password):
             returning A.id 
             """, [password, email, token])
         except Exception as e:
-            print(type(e), e)
+            logging.debug(str(type(e)) + " " + str(e))
             success = False
         else:
             rs = yield from cursor.fetchone()

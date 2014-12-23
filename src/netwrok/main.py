@@ -6,12 +6,12 @@ import os
 import sys
 import stat
 import imp
+import logging
 
 from collections import defaultdict
 from subprocess import Popen
 
 import websockets
-
 from .configuration import config
 from . import server
 from . import nwdb
@@ -41,7 +41,7 @@ def reloader(mp):
                 #force a restart if something bad happens.
                 nmt = mt - 1;
             if mt != nmt:
-                print("Change detected, restarting...")
+                logging.debug("Change detected, restarting...")
                 if mp is not None:
                     mp.terminate() 
                 yield from nwdb.close()

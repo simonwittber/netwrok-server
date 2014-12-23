@@ -2,6 +2,7 @@ import asyncio
 import json
 import traceback
 import sys
+import logging
 from collections import defaultdict
 
 import websockets
@@ -32,8 +33,7 @@ def server(ws, path):
     while not c.dead:
         msg = yield from ws.recv()
         if msg is None: break
-        if config["SERVER"]["LOG_MESSAGES"]:
-            print("< " + str(msg))
+        logging.debug("< " + str(msg))
         try:
             obj = json.loads(msg)
         except ValueError:
@@ -49,7 +49,7 @@ def server(ws, path):
         except exceptions.AuthException:
             yield from c.send("unauthorized")
         except Exception as e:
-            traceback.print_exc(file=sys.stdout)
+            logging.debug(e)
             yield from c.send("exception", obj, str(type(e).__name__), str(e))
 
     yield from c.close()

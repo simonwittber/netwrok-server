@@ -1,6 +1,6 @@
 import asyncio
 from aiohttp import web
-
+import logging
 from .configuration import config
 
 
@@ -23,6 +23,6 @@ def init(loop):
     app = web.Application(loop=loop)
     app.router.add_route('POST', '/IPN', handle)
     srv = yield from loop.create_server(app.make_handler, '0.0.0.0', 8080)
-    print("IPN Server started at http://0.0.0.0:8080")
+    logging.info("IPN Server started at http://0.0.0.0:8080")
     return srv
 

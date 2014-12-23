@@ -4,6 +4,7 @@ import os
 import random
 import asyncio
 import json
+import logging
 
 from . import exceptions
 from . import room
@@ -115,8 +116,7 @@ class Client:
         """Send a msg to the client"""
         if self.dead: return
         payload = json.dumps(dict(name=msg, type=mType, id=msgId, args=list(args)))
-        if config["SERVER"]["LOG_MESSAGES"]:
-            print("> " + payload)
+        logging.debug("> " + payload)
         try:
             yield from self.ws.send(payload)
         except websockets.exceptions.InvalidState:
