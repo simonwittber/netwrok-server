@@ -4,6 +4,7 @@ import aiopg
 from . import nwdb
 from . import core
 
+
 @core.handler
 def send(client, member_id, type, text):
     """
@@ -16,6 +17,35 @@ def send(client, member_id, type, text):
         insert into inbox(member_id, from_member_id, type, body)
         select %s, %s, %s, %s
         """, [member_id, client.session["member_id"], type, text])
+
+
+@core.handler
+def read(client, id):
+    """
+    Mark message as read.
+    """
+    client.require_auth()
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        cursor.execute("""
+        update inbox set read = true 
+        where id = %s and member_id = %s
+        """,[id, self.member_id])
+
+
+@core.handler
+def delete(client, id):
+    """
+    Delete a message.
+    """
+    client.require_auth()
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        cursor.execute("""
+        delete from inbox
+        where id = %s and member_id = %s
+        """,[id, self.member_id])
+
 
 @core.function
 def fetch(client):
