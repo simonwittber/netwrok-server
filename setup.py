@@ -1,7 +1,7 @@
 import sys
 from setuptools import setup, find_packages
 
-requirements = ['aiopg']
+requirements = ['aiopg','websockets','aiohttp']
 
 setup(
     version='0.0.0-dev',
