@@ -8,6 +8,7 @@ import stat
 import imp
 import logging
 
+
 from collections import defaultdict
 from subprocess import Popen
 
@@ -30,7 +31,9 @@ def reloader(mp):
     files = dict()
     for i in sys.modules.values():
         if hasattr(i, "__file__"):
-            files[i.__file__] = (i,os.stat(i.__file__)[stat.ST_MTIME])
+            if os.path.isfile(i.__file__):
+                logging.debug("Watching: " + i.__file__)
+                files[i.__file__] = (i,os.stat(i.__file__)[stat.ST_MTIME])
     while True:
         yield from asyncio.sleep(1)
         for f in files:
@@ -46,6 +49,7 @@ def reloader(mp):
                     mp.terminate() 
                 yield from nwdb.close()
                 yield from server.close()
+                yield from ipn.close()
                 os.execl(sys.argv[0], " ".join(sys.argv[1:]))
 
 

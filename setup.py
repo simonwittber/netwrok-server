@@ -34,7 +34,7 @@ setup(
     entry_points={
         'console_scripts': [
             'netwrok = netwrok.main:run',
-            'create_netwrok = netwrok.cmd:create',
+            'netwrok_create = netwrok.cmd:create',
         ]
     }
 )
