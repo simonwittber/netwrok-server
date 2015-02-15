@@ -3,6 +3,7 @@ from aiohttp.web import Application, Response, StreamResponse
 
 import logging
 from .configuration import config
+from . import nwdb
 
 
 @asyncio.coroutine
@@ -13,17 +14,39 @@ def handle_get(request):
 
 @asyncio.coroutine
 def handle(request):
-    #TODO: make this do something useful.
     text = yield from request.text()
     verify_text = "cmd=_notify-validate" + text
     post = yield from request.POST()
-    asyncio.async(send_verification(verify_text))
+    response = yield from aiohttp.request('post', 'https://www.paypal.com/cgi-bin/webscr', data=verify_text)
+    status = yield from response.read()
+    if status == "VERIFIED":
+        valid = True
+        if not data["receiver_id"] == "Something":
+            valid = False
+        if not data["mc_currency"] == "USD":
+            valid = False
+        yield from save_ipn(post, valid)
+    else:
+        logging.info("Paypal IPN did not validate: " + text)
+
     return web.Response(text.encode('utf-8'))
 
 
 @asyncio.coroutine
-def send_verification(payload):
-    yield from aiohttp.request('post', 'https://www.paypal.com/cgi-bin/webscr', data=verify_text)
+def save_ipn(post, valid):
+    email = post["payer_email"]
+    reference = post["txn_id"]
+    amount = post["mc_gross"]
+    email = post["payer_email"]
+    name = post["first_name"] + " " + post["last_name"]
+    status = post["payment_status"]
+    custom = post["custom"]
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        yield from cursor.execute("""
+        insert into paypal_ipn(email, reference, amount, email, name, status, custom, valid)
+        select %s, %s, %s, %s, %s, %s, %s, %s
+        """, [email, reference, amount, email, name, status, custom, valid])
 
 
 @asyncio.coroutine
