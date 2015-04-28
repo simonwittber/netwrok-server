@@ -19,6 +19,5 @@ def submit(client, crash_report):
         select %s, %s
         returning id
         """, [client.session["member_id"], crash_report])
-        rs = yield from cursor.fetchone()
-        yield from client.send("crash.submit", [rs[0]])
+        conn.commit()
 
