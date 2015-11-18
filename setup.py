@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 requirements = ['aiopg','websockets','aiohttp']
 
 setup(
-    version='0.0.0-dev',
+    version='0.0.1-dev',
     author = 'Simon Wittber',
     author_email = 'simonwittber@differentmethods.com',
     classifiers = [

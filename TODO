@@ -3,4 +3,6 @@ Inventory system
 Leaderboard System
 "Easy to read and write" test tool.
 Finish PayPal IPN
+Add IPN processor
 Expose runtime stats via HTTP
+Create hosted Session system for P2P style MMO service
