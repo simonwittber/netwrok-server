@@ -23,6 +23,20 @@ CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
+--
+-- Name: plpythonu; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS plpythonu WITH SCHEMA pg_catalog;
+
+
+--
+-- Name: EXTENSION plpythonu; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION plpythonu IS 'PL/PythonU untrusted procedural language';
+
+
 SET search_path = public, pg_catalog;
 
 --
@@ -538,8 +552,7 @@ CREATE TABLE member (
     password character varying(256) NOT NULL,
     created timestamp without time zone DEFAULT now() NOT NULL,
     handle character varying(255) NOT NULL,
-    clan_id integer,
-    roles text[] DEFAULT '{}'::text[] NOT NULL
+    clan_id integer
 );
 
 
@@ -911,14 +924,6 @@ ALTER TABLE ONLY contact
 
 ALTER TABLE ONLY crashreport
     ADD CONSTRAINT crashreport_pkey PRIMARY KEY (id);
-
-
---
--- Name: currency_name_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
---
-
-ALTER TABLE ONLY currency
-    ADD CONSTRAINT currency_name_key UNIQUE (name);
 
 
 --
