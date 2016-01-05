@@ -22,13 +22,21 @@ def members(client):
     return [i.member_id for i in client.location.members]
 
 
-@core.handler
-def enter(client, member_id):
+@core.function
+def enter(client, location_id):
     client.require_auth()
     if client.location is not None:
         yield from client.leave(location)
     client.location = room.Room.get("Location " + str(location_id))
     yield from client.join(client.location)
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        yield from cursor.execute("""
+        select * from location
+        where id = %s 
+        """, [location_id])
+        rs = yield from cursor.fetchall()
+        return list(rs)
 
 
 @core.handler

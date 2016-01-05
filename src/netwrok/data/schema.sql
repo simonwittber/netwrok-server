@@ -508,6 +508,67 @@ ALTER SEQUENCE journal_id_seq OWNED BY journal.id;
 
 
 --
+-- Name: location; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE location (
+    id integer NOT NULL
+);
+
+
+--
+-- Name: location_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE location_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: location_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE location_id_seq OWNED BY location.id;
+
+
+--
+-- Name: location_store; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE location_store (
+    id integer NOT NULL,
+    location_id integer NOT NULL,
+    key text NOT NULL,
+    value text,
+    created timestamp without time zone DEFAULT now() NOT NULL,
+    row_version integer DEFAULT 0
+);
+
+
+--
+-- Name: location_store_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE location_store_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: location_store_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE location_store_id_seq OWNED BY location_store.id;
+
+
+--
 -- Name: mailqueue; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -817,6 +878,20 @@ ALTER TABLE ONLY journal ALTER COLUMN id SET DEFAULT nextval('journal_id_seq'::r
 -- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
+ALTER TABLE ONLY location ALTER COLUMN id SET DEFAULT nextval('location_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY location_store ALTER COLUMN id SET DEFAULT nextval('location_store_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
 ALTER TABLE ONLY mailqueue ALTER COLUMN id SET DEFAULT nextval('mailqueue_id_seq'::regclass);
 
 
@@ -951,6 +1026,22 @@ ALTER TABLE ONLY journal
 
 
 --
+-- Name: location_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY location
+    ADD CONSTRAINT location_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: location_store_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY location_store
+    ADD CONSTRAINT location_store_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: mailqueue_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -1053,6 +1144,13 @@ CREATE UNIQUE INDEX clan_store_clan_id_key_idx ON clan_store USING btree (clan_i
 --
 
 CREATE UNIQUE INDEX currency_id_key ON currency USING btree (id);
+
+
+--
+-- Name: location_store_location_id_key_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE UNIQUE INDEX location_store_location_id_key_idx ON location_store USING btree (location_id, key);
 
 
 --
@@ -1207,6 +1305,14 @@ ALTER TABLE ONLY journal
 
 
 --
+-- Name: location_store_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY location_store
+    ADD CONSTRAINT location_store_location_id_fkey FOREIGN KEY (location_id) REFERENCES location(id);
+
+
+--
 -- Name: mailqueue_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -1259,8 +1365,8 @@ ALTER TABLE ONLY wallet
 --
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON SCHEMA public FROM simon;
-GRANT ALL ON SCHEMA public TO simon;
+REVOKE ALL ON SCHEMA public FROM swittber;
+GRANT ALL ON SCHEMA public TO swittber;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
