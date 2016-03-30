@@ -21,6 +21,7 @@ from . import clan
 from . import analytics
 from . import wallet
 from . import squad
+from . import location
 
 @asyncio.coroutine
 def close():

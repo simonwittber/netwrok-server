@@ -1,7 +1,7 @@
 import os
 import hashlib
 import asyncio
-
+import psycopg2.extras
 import aiopg
 
 from . import nwdb
@@ -20,29 +20,31 @@ def authenticate(client, email, password):
     """
     hash = client.uid
     with (yield from nwdb.connection(readonly=True)) as conn:
-        cursor = yield from conn.cursor()
+        cursor = yield from conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         yield from cursor.execute("""
-        select A.id, A.handle, A.email, A.password, A.clan_id, A.roles, B.alliance_id, B.name, C.name
+        select A.id, A.handle, A.email, A.password, M.clan_id, B.alliance_id, B.name as clan_name, C.name as alliance_name, M.id as membership_id
         from member A
-        left outer join clan B on B.id = A.clan_id
+        left outer join membership M on M.member_id = A.id
+        left outer join clan B on B.id = M.clan_id
         left outer join alliance C on C.id = B.alliance_id
         where lower(A.email) = lower(%s)
         """, [email])
         rs = yield from cursor.fetchone()
         authenticated = False
-        roles = []
         if rs is None:
+            print("rsIsNone")
             authenticated = False
         else:
             h = (hash + rs[3]).encode("utf8")
             if hashlib.sha256(h).hexdigest() == password:
-                client.member_id = client.session["member_id"] = rs[0]
-                client.clan_id = rs[4]
-                client.alliance_id = rs[6]
-                client.handle = rs[1]
-                client.clan_name = rs[7]
-                client.alliance_name = rs[8]
-                client.roles = list(rs[5])
+                client.member_id = client.session["member_id"] = rs["id"]
+                client.clan_id = rs["clan_id"]
+                client.alliance_id = rs["alliance_id"]
+                client.handle = rs["handle"]
+                client.clan_name = rs["clan_name"]
+                client.alliance_name = rs["alliance_name"]
+                cursor.execute("select name from role A inner join role_owner B on B.membership_id = %s", rs["membership_id"])
+                client.roles = roles = [i.name for i in cursor.fetchall()]
                 client.member_info = dict(
                     id=client.member_id, 
                     clan_id=client.clan_id, 

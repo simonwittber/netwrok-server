@@ -26,6 +26,17 @@ def add(client, member_id, type):
         else:
             yield from client.send("contacts.add", [True, rs[0], rs[1], rs[2]])
 
+@core.handler
+def remove(client, contact_id):
+    client.require_auth()
+    with (yield from nwdb.connection()) as conn:
+        cursor = yield from conn.cursor()
+        yield from cursor.execute("""
+        delete from contact
+        (owner_id, member_id, type)
+        where owner_id = %s and id = %s
+        """, [client.session["member_id"], contact_id])
+
 
 @core.function
 def fetch(client):

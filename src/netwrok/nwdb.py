@@ -1,6 +1,7 @@
 import random
 import asyncio
 from aiopg.pool import create_pool
+import psycopg2.extras
 
 from .configuration import config
 
@@ -34,7 +35,7 @@ def close():
 @asyncio.coroutine
 def execute(sql, *args):
     with (yield from connection()) as conn:
-        cursor = yield from conn.cursor()
+        cursor = yield from conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         yield from cursor.execute(sql, args)
         rs = yield from cursor.fetchall()
         return rs

@@ -670,6 +670,36 @@ ALTER SEQUENCE member_store_id_seq OWNED BY member_store.id;
 
 
 --
+-- Name: membership; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE membership (
+    id integer NOT NULL,
+    member_id integer,
+    clan_id integer
+);
+
+
+--
+-- Name: membership_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE membership_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: membership_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE membership_id_seq OWNED BY membership.id;
+
+
+--
 -- Name: password_reset_request; Type: TABLE; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -734,6 +764,65 @@ CREATE SEQUENCE paypal_ipn_id_seq
 --
 
 ALTER SEQUENCE paypal_ipn_id_seq OWNED BY paypal_ipn.id;
+
+
+--
+-- Name: role; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE role (
+    id integer NOT NULL,
+    name text
+);
+
+
+--
+-- Name: role_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE role_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: role_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE role_id_seq OWNED BY role.id;
+
+
+--
+-- Name: role_owner; Type: TABLE; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE TABLE role_owner (
+    id integer NOT NULL,
+    membership_id integer NOT NULL,
+    role_id integer NOT NULL
+);
+
+
+--
+-- Name: role_owner_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE role_owner_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: role_owner_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE role_owner_id_seq OWNED BY role_owner.id;
 
 
 --
@@ -913,6 +1002,13 @@ ALTER TABLE ONLY member_store ALTER COLUMN id SET DEFAULT nextval('member_store_
 -- Name: id; Type: DEFAULT; Schema: public; Owner: -
 --
 
+ALTER TABLE ONLY membership ALTER COLUMN id SET DEFAULT nextval('membership_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
 ALTER TABLE ONLY password_reset_request ALTER COLUMN id SET DEFAULT nextval('password_reset_request_id_seq'::regclass);
 
 
@@ -921,6 +1017,20 @@ ALTER TABLE ONLY password_reset_request ALTER COLUMN id SET DEFAULT nextval('pas
 --
 
 ALTER TABLE ONLY paypal_ipn ALTER COLUMN id SET DEFAULT nextval('paypal_ipn_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY role ALTER COLUMN id SET DEFAULT nextval('role_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY role_owner ALTER COLUMN id SET DEFAULT nextval('role_owner_id_seq'::regclass);
 
 
 --
@@ -1066,6 +1176,14 @@ ALTER TABLE ONLY member_store
 
 
 --
+-- Name: membership_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY membership
+    ADD CONSTRAINT membership_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: password_reset_request_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
 --
 
@@ -1079,6 +1197,30 @@ ALTER TABLE ONLY password_reset_request
 
 ALTER TABLE ONLY paypal_ipn
     ADD CONSTRAINT paypal_ipn_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: role_name_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY role
+    ADD CONSTRAINT role_name_key UNIQUE (name);
+
+
+--
+-- Name: role_owner_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY role_owner
+    ADD CONSTRAINT role_owner_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: role_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace: 
+--
+
+ALTER TABLE ONLY role
+    ADD CONSTRAINT role_pkey PRIMARY KEY (id);
 
 
 --
@@ -1179,6 +1321,13 @@ CREATE UNIQUE INDEX member_id_key ON member USING btree (id);
 --
 
 CREATE UNIQUE INDEX member_store_member_id_key_idx ON member_store USING btree (member_id, key);
+
+
+--
+-- Name: membership_member_id_clan_id_idx; Type: INDEX; Schema: public; Owner: -; Tablespace: 
+--
+
+CREATE UNIQUE INDEX membership_member_id_clan_id_idx ON membership USING btree (member_id, clan_id);
 
 
 --
@@ -1337,11 +1486,43 @@ ALTER TABLE ONLY member_store
 
 
 --
+-- Name: membership_clan_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY membership
+    ADD CONSTRAINT membership_clan_id_fkey FOREIGN KEY (clan_id) REFERENCES clan(id);
+
+
+--
+-- Name: membership_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY membership
+    ADD CONSTRAINT membership_member_id_fkey FOREIGN KEY (member_id) REFERENCES member(id);
+
+
+--
 -- Name: password_reset_request_member_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY password_reset_request
     ADD CONSTRAINT password_reset_request_member_id_fkey FOREIGN KEY (member_id) REFERENCES member(id) ON DELETE CASCADE;
+
+
+--
+-- Name: role_owner_membership_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY role_owner
+    ADD CONSTRAINT role_owner_membership_id_fkey FOREIGN KEY (membership_id) REFERENCES membership(id);
+
+
+--
+-- Name: role_owner_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY role_owner
+    ADD CONSTRAINT role_owner_role_id_fkey FOREIGN KEY (role_id) REFERENCES role(id);
 
 
 --
@@ -1365,8 +1546,8 @@ ALTER TABLE ONLY wallet
 --
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON SCHEMA public FROM swittber;
-GRANT ALL ON SCHEMA public TO swittber;
+REVOKE ALL ON SCHEMA public FROM simon;
+GRANT ALL ON SCHEMA public TO simon;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
